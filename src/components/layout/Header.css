@@ -66,6 +66,11 @@
   justify-content: center;
 }
 
+/* User menu styles */
+.user-menu-container {
+  position: relative;
+}
+
 .user-menu {
   display: flex;
   align-items: center;
@@ -95,6 +100,73 @@
 .user-name {
   font-size: 0.95rem;
   font-weight: 500;
+}
+
+/* User dropdown menu */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 220px;
+  z-index: 1000;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.user-dropdown-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.user-dropdown-header strong {
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.user-dropdown-header span {
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.user-dropdown-menu {
+  list-style: none;
+}
+
+.user-dropdown-menu li {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.user-dropdown-menu li:last-child {
+  border-bottom: none;
+}
+
+.user-dropdown-menu a,
+.user-dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  color: var(--text-color);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
+  text-decoration: none;
+}
+
+.user-dropdown-menu a:hover,
+.user-dropdown-menu button:hover {
+  background-color: var(--background-color);
+}
+
+.user-dropdown-menu li:last-child button {
+  color: var(--danger-color);
 }
 
 @media (max-width: 768px) {
