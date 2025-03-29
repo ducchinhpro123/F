@@ -7,7 +7,7 @@ var logger = require('morgan');
 var usersRouter = require('./routes/users');
 var apiRouter = require('./routes/api');
 var authRouter = require('./routes/auth');
-var productsRouter = require('./routes/products'); // Add this line
+var productsRouter = require('./routes/products'); 
 
 // Connect mongodb
 var connect_mongodb = require('./database_configuration/ConnectMongodb');
