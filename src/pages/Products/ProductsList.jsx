@@ -11,6 +11,9 @@ const ProductsList = () => {
     fetchProducts();
   }, [fetchProducts]);
 
+  // Extract the actual products array from the response
+  const productItems = products?.products || [];
+
   return (
     <div className="products-page">
       <div className="page-header">
@@ -22,8 +25,8 @@ const ProductsList = () => {
         <p>Loading products...</p>
       ) : (
         <div className="products-grid">
-          {products.map(product => (
-            <ProductItem key={product.id} product={product} />
+          {productItems.map((product) => (
+            <ProductItem key={product._id} product={product} />
           ))}
         </div>
       )}
