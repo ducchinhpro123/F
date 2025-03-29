@@ -6,6 +6,7 @@ import ProductDetail from './pages/Products/ProductDetail';
 import CustomersList from './pages/Customers/CustomersList';
 import Login from './pages/Auth/Login';
 import Signup from './pages/Auth/Signup';
+import ProfilePage from './pages/Profile/ProfilePage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { ProductProvider } from './context/ProductContext';
 import { CustomerProvider } from './context/CustomerContext';
@@ -28,6 +29,13 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProfilePage />
                   </Layout>
                 </ProtectedRoute>
               } />

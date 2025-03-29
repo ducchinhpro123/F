@@ -21,6 +21,11 @@ export async function apiRequest(endpoint, options = {}) {
     defaultHeaders['Authorization'] = `Bearer ${token}`;
   }
   
+  // Don't set content-type for FormData (browser will set it with boundary)
+  if (options.formData) {
+    delete defaultHeaders['Content-Type'];
+  }
+  
   const config = {
     ...options,
     headers: {
@@ -28,6 +33,11 @@ export async function apiRequest(endpoint, options = {}) {
       ...options.headers,
     },
   };
+  
+  // Remove formData flag from config
+  if (config.formData) {
+    delete config.formData;
+  }
   
   try {
     const response = await fetch(url, config);
@@ -71,5 +81,12 @@ export const api = {
   
   delete: (endpoint) => apiRequest(endpoint, {
     method: 'DELETE',
+  }),
+  
+  // For form data with file uploads
+  postForm: (endpoint, formData) => apiRequest(endpoint, {
+    method: 'POST',
+    body: formData,
+    formData: true, // Flag to avoid setting Content-Type
   })
 };

@@ -2,8 +2,45 @@ var User = require("../models/User");
 const bcrypt = require('bcrypt');
 var jwt = require("jsonwebtoken");
 var dotenv = require("dotenv");
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 
 dotenv.config();
+
+// Setup multer for file upload
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    const uploadDir = path.join(__dirname, '../public/avatars');
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function(req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'avatar-' + uniqueSuffix + ext);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Accept only image files
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5 // Limit to 5MB
+  },
+  fileFilter: fileFilter
+});
 
 class UserController {
   static async getAllUser(req, res) {
@@ -74,10 +111,12 @@ class UserController {
           id: user._id,
           name: user.name,
           username: user.username,
+          avatar: user.avatar, // Include avatar in response
+          role: user.role
         },
       });
     } catch (err) {
-      console.err(err);
+      console.error(err);
       res.status(500).json({
         success: false,
         message: "Server error",
@@ -126,6 +165,8 @@ class UserController {
           id: user._id,
           name: user.name,
           username: user.username,
+          avatar: user.avatar, // Include avatar in response
+          role: user.role
         },
       });
     } catch (error) {
@@ -134,6 +175,144 @@ class UserController {
         success: false,
         message: "Server error",
         error: error.message,
+      });
+    }
+  }
+
+  static async updateProfile(req, res) {
+    try {
+      const userId = req.user.id;
+      const { name } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({
+          success: false,
+          message: "Name is required"
+        });
+      }
+      
+      // Update user profile
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { name },
+        { new: true, runValidators: true }
+      ).select('-password');
+      
+      if (!updatedUser) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+      
+      res.status(200).json({
+        success: true,
+        user: {
+          id: updatedUser._id,
+          name: updatedUser.name,
+          username: updatedUser.username,
+          avatar: updatedUser.avatar
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+        error: error.message
+      });
+    }
+  }
+  
+  static async uploadAvatar(req, res) {
+    try {
+      // multer middleware will handle the file upload
+      upload.single('avatar')(req, res, async (err) => {
+        if (err) {
+          return res.status(400).json({
+            success: false,
+            message: err.message
+          });
+        }
+        
+        if (!req.file) {
+          return res.status(400).json({
+            success: false,
+            message: "No file uploaded"
+          });
+        }
+        
+        const userId = req.user.id;
+        const avatarPath = `/avatars/${req.file.filename}`;
+        
+        // Find user and get previous avatar path if exists
+        const user = await User.findById(userId);
+        const previousAvatar = user.avatar;
+        
+        // Update user with new avatar path
+        const updatedUser = await User.findByIdAndUpdate(
+          userId,
+          { avatar: avatarPath },
+          { new: true, runValidators: true }
+        ).select('-password');
+        
+        // Delete previous avatar file if it's not the default
+        if (previousAvatar && previousAvatar !== '/avatars/avatar.jpg') {
+          const previousAvatarPath = path.join(__dirname, '../public', previousAvatar);
+          if (fs.existsSync(previousAvatarPath)) {
+            fs.unlinkSync(previousAvatarPath);
+          }
+        }
+        
+        res.status(200).json({
+          success: true,
+          user: {
+            id: updatedUser._id,
+            name: updatedUser.name,
+            username: updatedUser.username,
+            avatar: updatedUser.avatar
+          }
+        });
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+        error: error.message
+      });
+    }
+  }
+  
+  static async getProfile(req, res) {
+    try {
+      const userId = req.user.id;
+      
+      const user = await User.findById(userId).select('-password');
+      
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+      
+      res.status(200).json({
+        success: true,
+        user: {
+          id: user._id,
+          name: user.name,
+          username: user.username,
+          avatar: user.avatar,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+        error: error.message
       });
     }
   }

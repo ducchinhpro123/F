@@ -33,6 +33,7 @@ const Header = ({ toggleSidebar }) => {
     if (path === '/') return 'Dashboard';
     if (path === '/login') return 'Login';
     if (path === '/signup') return 'Sign Up';
+    if (path === '/profile') return 'My Profile';
     if (path.includes('/products')) {
       if (path.includes('/new')) return 'Add Product';
       if (path.includes('/edit')) return 'Edit Product';
@@ -68,6 +69,27 @@ const Header = ({ toggleSidebar }) => {
     return names[0].charAt(0);
   };
   
+  // Render user avatar or initials
+  const renderUserAvatar = () => {
+    if (user?.avatar) {
+      return (
+        <img 
+          src={`http://localhost:3000${user.avatar}`} 
+          alt={user.name || 'User'}
+          className="user-avatar-img"
+          onError={(e) => {
+            e.target.onerror = null;
+            // Fallback to initials if image fails to load
+            e.target.style.display = 'none';
+            e.target.parentNode.innerHTML = getUserInitials();
+          }}
+        />
+      );
+    }
+    
+    return getUserInitials();
+  };
+
   return (
     <header className="header">
       <div className="header-left">
@@ -90,7 +112,9 @@ const Header = ({ toggleSidebar }) => {
             className="user-menu" 
             onClick={() => isAuthenticated ? setUserMenuOpen(!userMenuOpen) : navigate('/login')}
           >
-            <div className="avatar">{isAuthenticated ? getUserInitials() : 'G'}</div>
+            <div className="avatar">
+              {isAuthenticated ? renderUserAvatar() : 'G'}
+            </div>
             <span className="user-name">{isAuthenticated ? user.name : 'Guest'}</span>
           </div>
           

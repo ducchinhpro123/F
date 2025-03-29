@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { loginUser, registerUser } from '../services/authService';
+import { loginUser, registerUser, getUserProfile, updateUserProfile as apiUpdateProfile, uploadUserAvatar as apiUploadAvatar } from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -78,6 +78,79 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Fetch user profile
+  const fetchUserProfile = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await getUserProfile();
+      
+      if (response.success) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+        setUser(response.user);
+        return response.user;
+      } else {
+        throw new Error(response.message || 'Failed to fetch profile');
+      }
+    } catch (err) {
+      setError(err.message || 'An error occurred fetching user profile');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update user profile
+  const updateUserProfile = async (profileData) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiUpdateProfile(profileData);
+      
+      if (response.success) {
+        // Update user in state and localStorage
+        const updatedUser = {...user, ...response.user};
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        return updatedUser;
+      } else {
+        throw new Error(response.message || 'Failed to update profile');
+      }
+    } catch (err) {
+      setError(err.message || 'An error occurred updating user profile');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Upload avatar
+  const uploadAvatar = async (formData) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiUploadAvatar(formData);
+      
+      if (response.success) {
+        // Update user in state and localStorage with new avatar
+        const updatedUser = {...user, ...response.user};
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        return updatedUser;
+      } else {
+        throw new Error(response.message || 'Failed to upload avatar');
+      }
+    } catch (err) {
+      setError(err.message || 'An error occurred uploading avatar');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -86,6 +159,9 @@ export const AuthProvider = ({ children }) => {
       login, 
       signup, 
       logout,
+      fetchUserProfile,
+      updateUserProfile,
+      uploadAvatar,
       isAuthenticated: !!user 
     }}>
       {children}

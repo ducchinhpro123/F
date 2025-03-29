@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  avatar: {
+    type: String,
+    default: '/avatars/avatar.jpg'
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -39,7 +43,6 @@ userSchema.pre('save', async function(next) {
     next(error);
   }
 });
-
 
 // Method to compare passwords
 userSchema.methods.comparePassword = async function(candidatePassword) {
