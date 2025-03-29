@@ -31,10 +31,12 @@ const Layout = ({ children }) => {
   return (
     <div className="app-container">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-      <div className="content-container">
+      <div className="content-wrapper">
         <Header toggleSidebar={toggleSidebar} />
-        <div className="main-content">
-          {children}
+        <div className="content-container">
+          <div className="main-content">
+            {children}
+          </div>
         </div>
       </div>
     </div>
