@@ -7,11 +7,14 @@
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   
-  /* Make the header sticky */
-  position: sticky;
+  /* Make the header fixed instead of sticky */
+  /* position: fixed; */
   top: 0;
-  z-index: 100; /* Ensure it stays above other elements */
-  width: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  width: auto; /* Let it size naturally based on left/right positioning */
+  /* margin-left: 250px; /1* Match sidebar width *1/ */
 }
 
 .header-left {
@@ -169,6 +172,11 @@
   color: var(--danger-color);
 }
 
+/* Add a class for when sidebar is collapsed */
+.sidebar-collapsed .header {
+  margin-left: 70px; /* Match collapsed sidebar width */
+}
+
 @media (max-width: 768px) {
   .menu-toggle {
     display: block;
@@ -184,5 +192,6 @@
   
   .header {
     padding: 0.75rem 1rem;
+    margin-left: 0; /* No margin when sidebar is hidden on mobile */
   }
 }
