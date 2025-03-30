@@ -10,6 +10,7 @@ import "./ProductEdit.css";
 const ProductEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const { currentProduct, fetchProductById, updateProduct, loading } = useProductContext();
   const { categories, fetchCategories, loading: categoriesLoading, } = useCategoryContext();
 

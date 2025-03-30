@@ -7,6 +7,8 @@ import Pagination from "../../components/common/Pagination";
 
 const ProductsList = () => {
   const { products, loading, error, fetchProducts } = useProductContext();
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [filterCriteria, setFilterCriteria] = useState({
     searchTerm: "",
     category: "",
@@ -26,6 +28,9 @@ const ProductsList = () => {
     };
     
     // Only add non-empty filter values to query parameters
+    if (filterCriteria.searchTerm) {
+      queryParams.search = filterCriteria.searchTerm;
+    }
     if (filterCriteria.category) {
       queryParams.category = filterCriteria.category;
     }
@@ -73,6 +78,10 @@ const ProductsList = () => {
       </div>
     ));
   };
+
+  const handleSearchTerm = (e) => {
+
+  }
 
   return (
     <div className="products-page">
