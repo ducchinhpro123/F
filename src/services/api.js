@@ -9,48 +9,37 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
  * @returns {Promise<any>} - Response data
  */
 export async function apiRequest(endpoint, options = {}) {
-  const url = `${API_URL}${endpoint}`;
+  const token = localStorage.getItem('auth_token');
   
+  // Default headers for JSON
   const defaultHeaders = {
     'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
   };
   
-  // Add auth token if available
-  const token = localStorage.getItem('auth_token');
-  if (token) {
-    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  // Don't set Content-Type header when FormData is present
+  // Browser will automatically set it with correct boundary
+  if (options.body instanceof FormData) {
+    delete defaultHeaders['Content-Type'];
   }
   
-  const config = {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-  };
-  
   try {
-    const response = await fetch(url, config);
-    
-    // Handle non-JSON responses
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'API request failed');
-      }
-      
-      return data;
-    } else {
-      if (!response.ok) {
-        throw new Error('API request failed');
-      }
-      
-      return response.text();
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        ...defaultHeaders,
+        ...options.headers
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'API request failed');
     }
+
+    return await response.json();
   } catch (error) {
-    console.error('API Request Error:', error);
+    console.error('API request error:', error);
     throw error;
   }
 }
@@ -59,15 +48,35 @@ export async function apiRequest(endpoint, options = {}) {
 export const api = {
   get: (endpoint) => apiRequest(endpoint),
   
-  post: (endpoint, data) => apiRequest(endpoint, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
+  post: (endpoint, data) => {
+    // If data is FormData, don't stringify it
+    if (data instanceof FormData) {
+      return apiRequest(endpoint, {
+        method: 'POST',
+        body: data,
+      });
+    }
+    
+    return apiRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
   
-  put: (endpoint, data) => apiRequest(endpoint, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  }),
+  put: (endpoint, data) => {
+    // If data is FormData, don't stringify it
+    if (data instanceof FormData) {
+      return apiRequest(endpoint, {
+        method: 'PUT',
+        body: data,
+      });
+    }
+    
+    return apiRequest(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
   
   delete: (endpoint) => apiRequest(endpoint, {
     method: 'DELETE',
