@@ -49,11 +49,11 @@ export const ProductProvider = ({ children }) => {
     }
   }, []);
 
-  const handleUpdateProduct = useCallback(async (id, productData) => {
+  const handleUpdateProduct = useCallback(async (id, formData) => {
     setLoading(true);
     try {
-      const data = await updateProduct(id, productData);
-      setProducts(prev => prev.map(item => item.id === id ? data : item));
+      const data = await updateProduct(id, formData);
+      // setProducts(prev => prev.map(item => item.id === id ? data : item));
       return data;
     } catch (err) {
       setError(err.message);
