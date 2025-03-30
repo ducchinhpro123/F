@@ -7,25 +7,43 @@ import { useEffect } from "react";
 import "./ProductNew.css";
 
 const ProductNew = () => {
-
-  const { register, handleSubmit, control, formState: { errors }, watch, reset } = useForm({
-    defaultValues: { name: "", description: "", price: "", stock: 0, categoryId: "", featured: false, image: null }
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    watch,
+    reset,
+  } = useForm({
+    defaultValues: {
+      name: "",
+      description: "",
+      price: "",
+      stock: 0,
+      categoryId: "",
+      featured: false,
+      image: null,
+    },
   });
   const navigate = useNavigate();
 
   const [submitStatus, setSubmitStatus] = useState({
     loading: false,
     success: false,
-    error: null
+    error: null,
   });
 
   const { createProduct } = useProductContext();
-  const { categories, fetchCategories, loading: categoriesLoading } = useCategoryContext();
+  const {
+    categories,
+    fetchCategories,
+    loading: categoriesLoading,
+  } = useCategoryContext();
 
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
-  
+
   const categoryItems = categories?.categories || [];
 
   const onSubmit = async (data) => {
@@ -37,30 +55,31 @@ const ProductNew = () => {
       formData.append("stock", parseInt(data.stock, 10));
       formData.append("categoryId", data.categoryId);
       formData.append("featured", data.featured);
-      
+
       // Only append image if a file was selected
       if (data.image && data.image[0]) {
         formData.append("image", data.image[0]);
       }
-      
+
       const result = await createProduct(formData);
-      
+
       setSubmitStatus({ loading: false, success: true, error: null });
       reset();
-      
-      navigate(`/products/${result._id}`);
+
+      setTimeout(() => navigate(`/products/${result._id}`), 1000);
     } catch (error) {
       // console.error(e);
-      setSubmitStatus({ 
-        loading: false, 
-        success: false, 
-        error: error.message || "Failed to create product. Please try again." 
+      setSubmitStatus({
+        loading: false,
+        success: false,
+        error: error.message || "Failed to create product. Please try again.",
       });
     }
   };
 
   const imageFile = watch("image");
-  const previewImage = imageFile && imageFile[0] ? URL.createObjectURL(imageFile[0]) : null;
+  const previewImage =
+    imageFile && imageFile[0] ? URL.createObjectURL(imageFile[0]) : null;
 
   return (
     <div className="product-new-container">
@@ -68,11 +87,14 @@ const ProductNew = () => {
         <h1>Add New Product</h1>
         <p>Create a new product to add to your inventory</p>
       </div>
+      {submitStatus.success && (
+        <div className="success-message">
+          Product created successfully! Redirecting to products list...
+        </div>
+      )}
 
       {submitStatus.error && (
-        <div className="error-message">
-          {submitStatus.error}
-        </div>
+        <div className="error-message">{submitStatus.error}</div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="product-form">
@@ -85,15 +107,17 @@ const ProductNew = () => {
                 type="text"
                 className={`form-control ${errors.name ? "is-invalid" : ""}`}
                 placeholder="Enter product name"
-                {...register("name", { 
+                {...register("name", {
                   required: "Product name is required",
                   maxLength: {
                     value: 100,
-                    message: "Name cannot exceed 100 characters"
-                  }
+                    message: "Name cannot exceed 100 characters",
+                  },
                 })}
               />
-              {errors.name && <span className="error-text">{errors.name.message}</span>}
+              {errors.name && (
+                <span className="error-text">{errors.name.message}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -107,13 +131,15 @@ const ProductNew = () => {
                   required: "Description is required",
                   maxLength: {
                     value: 2000,
-                    message: "Description cannot exceed 2000 characters"
-                  }
+                    message: "Description cannot exceed 2000 characters",
+                  },
                 })}
               />
-              {errors.description && <span className="error-text">{errors.description.message}</span>}
+              {errors.description && (
+                <span className="error-text">{errors.description.message}</span>
+              )}
             </div>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="price">Price ($) *</label>
@@ -127,12 +153,16 @@ const ProductNew = () => {
                     required: "Price is required",
                     min: {
                       value: 0,
-                      message: "Price must be a positive number"
+                      message: "Price must be a positive number",
                     },
-                    validate: value => !isNaN(parseFloat(value)) || "Price must be a valid number"
+                    validate: (value) =>
+                      !isNaN(parseFloat(value)) ||
+                      "Price must be a valid number",
                   })}
                 />
-                {errors.price && <span className="error-text">{errors.price.message}</span>}
+                {errors.price && (
+                  <span className="error-text">{errors.price.message}</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -146,12 +176,16 @@ const ProductNew = () => {
                     required: "Stock is required",
                     min: {
                       value: 0,
-                      message: "Stock must be a positive number"
+                      message: "Stock must be a positive number",
                     },
-                    validate: value => Number.isInteger(Number(value)) || "Stock must be an integer"
+                    validate: (value) =>
+                      Number.isInteger(Number(value)) ||
+                      "Stock must be an integer",
                   })}
                 />
-                {errors.stock && <span className="error-text">{errors.stock.message}</span>}
+                {errors.stock && (
+                  <span className="error-text">{errors.stock.message}</span>
+                )}
               </div>
             </div>
 
@@ -161,7 +195,7 @@ const ProductNew = () => {
                 id="categoryId"
                 className={`form-control ${errors.categoryId ? "is-invalid" : ""}`}
                 {...register("categoryId", {
-                  required: "Please select a category"
+                  required: "Please select a category",
                 })}
               >
                 <option value="">Select a category</option>
@@ -171,15 +205,13 @@ const ProductNew = () => {
                   </option>
                 ))}
               </select>
-              {errors.categoryId && <span className="error-text">{errors.categoryId.message}</span>}
+              {errors.categoryId && (
+                <span className="error-text">{errors.categoryId.message}</span>
+              )}
             </div>
-            
+
             <div className="form-group checkbox-group">
-              <input
-                id="featured"
-                type="checkbox"
-                {...register("featured")}
-              />
+              <input id="featured" type="checkbox" {...register("featured")} />
               <label htmlFor="featured">Featured Product</label>
             </div>
           </div>
@@ -187,16 +219,22 @@ const ProductNew = () => {
           <div className="form-right">
             <div className="form-group image-upload">
               <label>Product Image</label>
-              <div className={`image-preview ${errors.image ? "is-invalid" : ""}`}>
+              <div
+                className={`image-preview ${errors.image ? "is-invalid" : ""}`}
+              >
                 {previewImage ? (
-                  <img src={previewImage} alt="Preview" className="preview-image" />
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="preview-image"
+                  />
                 ) : (
                   <div className="placeholder-image">
                     <span>No image selected</span>
                   </div>
                 )}
               </div>
-              
+
               <div className="file-input-container">
                 <label htmlFor="image" className="file-input-label">
                   Choose Image
@@ -208,37 +246,52 @@ const ProductNew = () => {
                   className="file-input"
                   {...register("image", {
                     validate: {
-                      fileSize: files => {
+                      fileSize: (files) => {
                         if (!files || !files[0]) return true;
-                        return files[0].size <= 5 * 1024 * 1024 || "Image size must be less than 5MB";
+                        return (
+                          files[0].size <= 5 * 1024 * 1024 ||
+                          "Image size must be less than 5MB"
+                        );
                       },
-                      fileFormat: files => {
+                      fileFormat: (files) => {
                         if (!files || !files[0]) return true;
-                        const acceptedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-                        return acceptedFormats.includes(files[0].type) || "Only JPEG, PNG and WebP formats are supported";
-                      }
-                    }
+                        const acceptedFormats = [
+                          "image/jpeg",
+                          "image/jpg",
+                          "image/png",
+                          "image/webp",
+                        ];
+                        return (
+                          acceptedFormats.includes(files[0].type) ||
+                          "Only JPEG, PNG and WebP formats are supported"
+                        );
+                      },
+                    },
                   })}
                 />
                 <span className="selected-file-name">
-                  {imageFile && imageFile[0] ? imageFile[0].name : "No file selected"}
+                  {imageFile && imageFile[0]
+                    ? imageFile[0].name
+                    : "No file selected"}
                 </span>
-                {errors.image && <span className="error-text">{errors.image.message}</span>}
+                {errors.image && (
+                  <span className="error-text">{errors.image.message}</span>
+                )}
               </div>
             </div>
           </div>
         </div>
 
         <div className="form-actions">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-primary"
             disabled={submitStatus.loading}
           >
             {submitStatus.loading ? "Creating..." : "Create Product"}
           </button>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="btn btn-secondary"
             onClick={() => navigate("/products")}
           >
