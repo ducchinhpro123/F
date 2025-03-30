@@ -24,5 +24,7 @@ package.json
 *.sln
 *.sw?
 # Ignore package files
-package.json
 package-lock.json
+package.json
+SERVER/package-lock.json
+SERVER/package.json
