@@ -96,6 +96,7 @@ class ProductController {
         success: true,
         product
       });
+
     } catch (error) {
       console.error(error);
       return res.status(500).json({
@@ -109,10 +110,12 @@ class ProductController {
   // Create new product
   static async createProduct(req, res) {
     try {
-      const { name, description, price, category, stock, featured } = req.body;
+      console.log(req.body);
+      const { name, description, price, categoryId, stock, featured } = req.body;
       
       // Check if category exists
-      const existingCategory = await Category.findById(category);
+      const existingCategory = await Category.findById(categoryId);
+
       if (!existingCategory) {
         // If file was uploaded, delete it since we're returning an error
         if (req.file) {
@@ -129,7 +132,7 @@ class ProductController {
         name,
         description,
         price: parseFloat(price),
-        category,
+        category: existingCategory._id,
         stock: parseInt(stock) || 0,
         featured: featured === 'true' || featured === true,
         createdBy: req.user.id,
