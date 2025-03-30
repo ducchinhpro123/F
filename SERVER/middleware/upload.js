@@ -14,7 +14,6 @@ const createDirectoryIfNotExists = (directory) => {
 const productStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, '../public/images');
-    console.log(dir);
     createDirectoryIfNotExists(dir);
     cb(null, dir);
   },

@@ -202,18 +202,33 @@ class ProductController {
         });
       }
       
-      // If a new image was uploaded
+      // If a new image was uploaded, handle the image update
       if (req.file) {
-        // Delete old image if it's not the default
-        if (product.image && product.image !== 'default-product.jpg') {
-          const oldImagePath = path.join(__dirname, '../public', product.image);
-          if (fs.existsSync(oldImagePath)) {
-            fs.unlinkSync(oldImagePath);
+        console.log(product.image);
+        try {
+          // Delete old image if it's not the default and is a valid file path
+          if (product.image && 
+              product.image !== 'default-product.jpg' && 
+              product.image !== '/' &&  // the empty file start with the /
+              product.image.length > 1) {
+            
+            const oldImagePath = path.join(__dirname, '../public', product.image);
+            
+            // Check if the path exists and is a file (not a directory)
+            if (fs.existsSync(oldImagePath) && fs.statSync(oldImagePath).isFile()) {
+              fs.unlinkSync(oldImagePath);
+            }
           }
+        } catch (fileError) {
+          console.error('Error deleting old image:', fileError);
+          // Continue with the update even if image deletion fails
         }
         
         // Set new image
         updateData.image = `/images/${req.file.filename}`;
+      } else {
+        // No new image uploaded, keep the existing image
+        delete updateData.image;
       }
 
       // Update product
@@ -230,9 +245,13 @@ class ProductController {
     } catch (error) {
       // If file was uploaded, delete it since we encountered an error
       if (req.file) {
-        const filePath = path.join(__dirname, '../public/images', req.file.filename);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+        try {
+          const filePath = path.join(__dirname, '../public/images', req.file.filename);
+          if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (cleanupError) {
+          console.error('Error cleaning up uploaded file:', cleanupError);
         }
       }
       
@@ -268,12 +287,23 @@ class ProductController {
         });
       }
       
-      // Delete product image if it's not the default
-      if (product.image && product.image !== 'default-product.jpg') {
-        const imagePath = path.join(__dirname, '../public', product.image);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
+      // Delete product image if it's not the default and is a valid file path
+      try {
+        if (product.image && 
+            product.image !== 'default-product.jpg' && 
+            product.image !== '/' && 
+            product.image.length > 1) {
+          
+          const imagePath = path.join(__dirname, '../public', product.image);
+          
+          // Check if the path exists and is a file (not a directory)
+          if (fs.existsSync(imagePath) && fs.statSync(imagePath).isFile()) {
+            fs.unlinkSync(imagePath);
+          }
         }
+      } catch (fileError) {
+        console.error('Error deleting product image:', fileError);
+        // Continue with the product deletion even if image deletion fails
       }
       
       // Delete product
@@ -337,11 +367,22 @@ class ProductController {
       }
       
       // Delete old image if it's not the default
-      if (product.image && product.image !== 'default-product.jpg') {
-        const oldImagePath = path.join(__dirname, '../public', product.image);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
+      try {
+        if (product.image && 
+            product.image !== 'default-product.jpg' && 
+            product.image !== '/' && 
+            product.image.length > 1) {
+          
+          const oldImagePath = path.join(__dirname, '../public', product.image);
+          
+          // Check if the path exists and is a file (not a directory)
+          if (fs.existsSync(oldImagePath) && fs.statSync(oldImagePath).isFile()) {
+            fs.unlinkSync(oldImagePath);
+          }
         }
+      } catch (fileError) {
+        console.error('Error deleting old product image:', fileError);
+        // Continue with the update even if image deletion fails
       }
       
       // Update product with new image
