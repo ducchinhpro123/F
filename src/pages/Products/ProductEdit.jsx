@@ -10,13 +10,8 @@ import "./ProductEdit.css";
 const ProductEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentProduct, fetchProductById, updateProduct, loading } =
-    useProductContext();
-  const {
-    categories,
-    fetchCategories,
-    loading: categoriesLoading,
-  } = useCategoryContext();
+  const { currentProduct, fetchProductById, updateProduct, loading } = useProductContext();
+  const { categories, fetchCategories, loading: categoriesLoading, } = useCategoryContext();
 
   const [updateStatus, setUpdateStatus] = useState({
     loading: false,
@@ -30,6 +25,7 @@ const ProductEdit = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm({
     defaultValues: {
       name: "",
@@ -46,7 +42,11 @@ const ProductEdit = () => {
 
   useEffect(() => {
     if (currentProduct?.product) {
-      reset(currentProduct.product);
+      // When resetting the form, explicitly set the categoryId to the product's category._id
+      reset({
+        ...currentProduct.product,
+        categoryId: currentProduct.product.category._id,
+      });
     }
   }, [currentProduct, reset]);
 
@@ -162,7 +162,7 @@ const ProductEdit = () => {
         console.log("Image being uploaded:", productData.image[0].name);
         formData.append("image", productData.image[0]);
       }
-      
+
       await updateProduct(id, formData);
       setUpdateStatus({ loading: false, success: true, error: null });
 
@@ -178,7 +178,6 @@ const ProductEdit = () => {
       });
     }
   };
-
 
   return (
     <div className="product-edit-container">
@@ -292,11 +291,10 @@ const ProductEdit = () => {
 
             <div className="product-meta">
               <div className="meta-item form-group">
-                <label htmlFor="category">Category</label>
+                <label htmlFor="categoryId">Category</label>
                 <select
-                  id="category"
+                  id="categoryId"
                   className={errors.categoryId ? "error" : ""}
-                  defaultValue={product.category.name}
                   {...register("categoryId", {
                     required: "Product category is required",
                   })}

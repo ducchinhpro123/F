@@ -4,11 +4,23 @@ const PRODUCTS_ENDPOINT = '/products';
 
 /**
  * Get all products
- * @param {Object} filters - Optional query parameters
- * @returns {Promise<Array>} Array of products
+ * @param {Object} params - Query parameters (filters, pagination)
+ * @returns {Promise<Object>} Products response with pagination data
  */
-export async function getProducts(filters = {}) {
-  return api.get(PRODUCTS_ENDPOINT, { params: filters });
+export async function getProducts(params = {}) {
+  // Convert params object to query string
+  const queryParams = new URLSearchParams();
+  
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      queryParams.append(key, value);
+    }
+  });
+  
+  const queryString = queryParams.toString();
+  const endpoint = queryString ? `${PRODUCTS_ENDPOINT}?${queryString}` : PRODUCTS_ENDPOINT;
+  
+  return api.get(endpoint);
 }
 
 /**
