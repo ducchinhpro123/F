@@ -114,6 +114,10 @@ class ProductController {
       // Check if category exists
       const existingCategory = await Category.findById(category);
       if (!existingCategory) {
+        // If file was uploaded, delete it since we're returning an error
+        if (req.file) {
+          fs.unlinkSync(path.join(__dirname, '../public/images', req.file.filename));
+        }
         return res.status(400).json({
           success: false,
           message: 'Invalid category'
@@ -124,24 +128,28 @@ class ProductController {
       const product = await Product.create({
         name,
         description,
-        price,
+        price: parseFloat(price),
         category,
-        stock,
-        featured: featured || false,
-        createdBy: req.user.id // Assuming auth middleware adds user to req
+        stock: parseInt(stock) || 0,
+        featured: featured === 'true' || featured === true,
+        createdBy: req.user.id,
+        // Set image if uploaded
+        image: req.file ? `/images/${req.file.filename}` : 'default-product.jpg'
       });
-      
-      // If image was uploaded, save it
-      if (req.file) {
-        product.image = `/images/${req.file.filename}`;
-        await product.save();
-      }
       
       return res.status(201).json({
         success: true,
         product
       });
     } catch (error) {
+      // If file was uploaded, delete it since we encountered an error
+      if (req.file) {
+        const filePath = path.join(__dirname, '../public/images', req.file.filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+      
       console.error(error);
       return res.status(500).json({
         success: false,
@@ -155,26 +163,59 @@ class ProductController {
   static async updateProduct(req, res) {
     try {
       const productId = req.params.id;
-      const updateData = req.body;
+      const updateData = { ...req.body };
+      
+      console.log('Update data received:', updateData);
+      console.log('File received:', req.file);
+      
+      // Handle numeric values - ensure proper parsing from FormData
+      if (updateData.price) updateData.price = parseFloat(updateData.price);
+      if (updateData.stock) updateData.stock = parseInt(updateData.stock, 10);
+      if (updateData.categoryId) updateData.category = updateData.categoryId; // Map categoryId to category
+      
+      // Delete categoryId since we now use 'category' in our model
+      delete updateData.categoryId;
       
       // Find product
       const product = await Product.findById(productId);
       
       if (!product) {
+        // If file was uploaded, delete it since we're returning an error
+        if (req.file) {
+          fs.unlinkSync(path.join(__dirname, '../public/images', req.file.filename));
+        }
         return res.status(404).json({
           success: false,
           message: 'Product not found'
         });
       }
       
-      // Check if user is authorized (owner or admin)
-      if (product.createdBy.toString() !== req.user.id && req.user.role !== 'admin') {
+      // Check if user is authorized (admin)
+      if (req.user.role !== 'admin') {
+        // If file was uploaded, delete it since we're returning an error
+        if (req.file) {
+          fs.unlinkSync(path.join(__dirname, '../public/images', req.file.filename));
+        }
         return res.status(403).json({
           success: false,
           message: 'Not authorized to update this product'
         });
       }
       
+      // If a new image was uploaded
+      if (req.file) {
+        // Delete old image if it's not the default
+        if (product.image && product.image !== 'default-product.jpg') {
+          const oldImagePath = path.join(__dirname, '../public', product.image);
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
+        }
+        
+        // Set new image
+        updateData.image = `/images/${req.file.filename}`;
+      }
+
       // Update product
       const updatedProduct = await Product.findByIdAndUpdate(
         productId,
@@ -187,6 +228,14 @@ class ProductController {
         product: updatedProduct
       });
     } catch (error) {
+      // If file was uploaded, delete it since we encountered an error
+      if (req.file) {
+        const filePath = path.join(__dirname, '../public/images', req.file.filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+      
       console.error(error);
       return res.status(500).json({
         success: false,
@@ -256,6 +305,63 @@ class ProductController {
         products
       });
     } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: 'Server error',
+        error: error.message
+      });
+    }
+  }
+  
+  // Upload product image only
+  static async uploadImage(req, res) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'No image file uploaded'
+        });
+      }
+      
+      const productId = req.params.id;
+      const product = await Product.findById(productId);
+      
+      if (!product) {
+        // Delete the uploaded file
+        fs.unlinkSync(path.join(__dirname, '../public/images', req.file.filename));
+        return res.status(404).json({
+          success: false,
+          message: 'Product not found'
+        });
+      }
+      
+      // Delete old image if it's not the default
+      if (product.image && product.image !== 'default-product.jpg') {
+        const oldImagePath = path.join(__dirname, '../public', product.image);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      
+      // Update product with new image
+      product.image = `/images/${req.file.filename}`;
+      await product.save();
+      
+      return res.json({
+        success: true,
+        imageUrl: product.image,
+        message: 'Image uploaded successfully'
+      });
+    } catch (error) {
+      // If file was uploaded, delete it since we encountered an error
+      if (req.file) {
+        const filePath = path.join(__dirname, '../public/images', req.file.filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+      
       console.error(error);
       return res.status(500).json({
         success: false,
