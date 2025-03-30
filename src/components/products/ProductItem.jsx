@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useProductContext } from "../../context/ProductContext";
 import { useState } from 'react';
 
-const ProductItem = ({ product }) => {
+const ProductItem = ({ product, pageInfo = '' }) => {
   // Determine stock status
   const [isDeleting, setIsDeleting] = useState();
 
@@ -67,13 +67,19 @@ const ProductItem = ({ product }) => {
       </div>
 
       <div className="product-actions">
-        <Link to={`/products/${product._id}`} className="btn btn-edit">
+        <Link to={`/products/edit/${product._id}`} className="btn btn-edit">
           Edit
         </Link>
         <Link to={`/products/view/${product._id}`} className="btn btn-primary">
           View
         </Link>
-        <button className="btn btn-danger" onClick={handleDelete}> Delete </button>
+        <button 
+          className="btn btn-danger" 
+          onClick={handleDelete} 
+          disabled={isDeleting}
+        > 
+          {isDeleting ? "Deleting..." : "Delete"} 
+        </button>
       </div>
     </div>
   );
