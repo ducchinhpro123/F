@@ -39,44 +39,6 @@ const ProductEdit = () => {
 
   const categoryItems = categories?.categories || [];
 
-  const onSubmit = async (data) => {
-    setUpdateStatus({ loading: true, success: false, error: null });
-    try {
-      // Convert numeric fields
-      const productData = {
-        ...data,
-        price: parseFloat(data.price),
-        stock: parseInt(data.stock, 10),
-      };
-
-      let formData = new FormData();
-      formData.append("name", productData.name);
-      formData.append("description", productData.description);
-      formData.append("price", parseFloat(productData.price));
-      formData.append("stock", parseInt(productData.stock, 10));
-      formData.append("categoryId", productData.categoryId);
-
-      if (productData.image && productData.image.length > 0) {
-        console.log("Image being uploaded:", productData.image[0].name);
-        formData.append("image", productData.image[0]);
-      }
-      
-      await updateProduct(id, formData);
-      setUpdateStatus({ loading: false, success: true, error: null });
-
-      // Show success message briefly before redirecting
-      setTimeout(() => {
-        navigate("/products");
-      }, 1500);
-    } catch (error) {
-      setUpdateStatus({
-        loading: false,
-        success: false,
-        error: error.message || "Failed to update product",
-      });
-    }
-  };
-
   useEffect(() => {
     fetchProductById(id);
     fetchCategories(); // Fetch categories when component mounts
@@ -178,6 +140,45 @@ const ProductEdit = () => {
   }
 
   const { product } = currentProduct;
+
+  const onSubmit = async (data) => {
+    setUpdateStatus({ loading: true, success: false, error: null });
+    try {
+      // Convert numeric fields
+      const productData = {
+        ...data,
+        price: parseFloat(data.price),
+        stock: parseInt(data.stock, 10),
+      };
+
+      let formData = new FormData();
+      formData.append("name", productData.name);
+      formData.append("description", productData.description);
+      formData.append("price", parseFloat(productData.price));
+      formData.append("stock", parseInt(productData.stock, 10));
+      formData.append("categoryId", productData.categoryId);
+
+      if (productData.image && productData.image.length > 0) {
+        console.log("Image being uploaded:", productData.image[0].name);
+        formData.append("image", productData.image[0]);
+      }
+      
+      await updateProduct(id, formData);
+      setUpdateStatus({ loading: false, success: true, error: null });
+
+      // Show success message briefly before redirecting
+      setTimeout(() => {
+        navigate("/products");
+      }, 1500);
+    } catch (error) {
+      setUpdateStatus({
+        loading: false,
+        success: false,
+        error: error.message || "Failed to update product",
+      });
+    }
+  };
+
 
   return (
     <div className="product-edit-container">
