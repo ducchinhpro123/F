@@ -12,10 +12,6 @@ const categorySchema = new mongoose.Schema({
     type: String,
     maxlength: [500, 'Description cannot exceed 500 characters']
   },
-  image: {
-    type: String,
-    default: 'default-category.jpg'
-  },
   createdAt: {
     type: Date,
     default: Date.now

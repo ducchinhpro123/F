@@ -1,30 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react";
+import { useCategoryContext } from "../../context/CategoryContext";
 
 const ProductFilter = ({ onFilterChange }) => {
   const [filters, setFilters] = useState({
-    searchTerm: '',
-    category: 'all',
+    searchTerm: "",
+    category: "",
   });
+
+  const { categories, fetchCategories, loading } = useCategoryContext();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     const updatedFilters = {
       ...filters,
-      [name]: value
+      [name]: value,
     };
-    
+
     setFilters(updatedFilters);
     onFilterChange(updatedFilters);
   };
 
-  const categories = [
-    'Laptops',
-    'Desktops',
-    'Tablets',
-    'Smartphones',
-    'Accessories',
-    'Other'
-  ];
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  const categoryItems = categories?.categories || [];
 
   return (
     <div className="filter-container">
@@ -39,7 +39,7 @@ const ProductFilter = ({ onFilterChange }) => {
             className="search-input"
           />
         </div>
-        
+
         <div className="filter-group">
           <label htmlFor="category">Category:</label>
           <select
@@ -48,12 +48,16 @@ const ProductFilter = ({ onFilterChange }) => {
             value={filters.category}
             onChange={handleInputChange}
           >
-            <option value="all">All Categories</option>
-            {categories.map(category => (
-              <option key={category} value={category.toLowerCase()}>
-                {category}
-              </option>
-            ))}
+            <option value="">All Categories</option>
+            {loading ? (
+              <option disabled>Loading categories...</option>
+            ) : (
+              categoryItems.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))
+            )}
           </select>
         </div>
       </div>

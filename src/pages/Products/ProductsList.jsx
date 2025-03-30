@@ -3,23 +3,61 @@ import { Link } from "react-router-dom";
 import { useProductContext } from "../../context/ProductContext";
 import ProductItem from "../../components/products/ProductItem";
 import ProductFilter from "../../components/products/ProductFilter";
+import Pagination from "../../components/common/Pagination";
 
 const ProductsList = () => {
   const { products, loading, error, fetchProducts } = useProductContext();
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [filterCriteria, setFilterCriteria] = useState({});
+  const [filterCriteria, setFilterCriteria] = useState({
+    searchTerm: "",
+    category: "",
+  });
 
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    limit: 10
+  });
+
+  // Fetch products when component mounts, filter criteria changes, or page changes
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    const queryParams = {
+      page: pagination.currentPage,
+      limit: pagination.limit
+    };
+    
+    // Only add non-empty filter values to query parameters
+    if (filterCriteria.category) {
+      queryParams.category = filterCriteria.category;
+    }
+        
+    fetchProducts(queryParams);
+  }, [filterCriteria, pagination.currentPage]);
+
+  // Update pagination state when products data changes
+  useEffect(() => {
+    if (products) {
+      setPagination({
+        currentPage: products.currentPage || 1,
+        totalPages: products.totalPages || 1,
+        limit: pagination.limit
+      });
+    }
+  }, [products]);
 
   // Extract the actual products array from the response
   const productItems = products?.products || [];
   
-  // Handle filter changes
+  // Handle filter changes - reset to page 1 when filters change
   const handleFilterChange = (filters) => {
     setFilterCriteria(filters);
-    // Apply client-side filtering if needed (or you can call fetchProducts with filters)
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, currentPage: newPage }));
+    // Scroll to top of product list for better UX
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Render loading skeletons
@@ -42,7 +80,7 @@ const ProductsList = () => {
         <div className="page-header-content">
           <h1>Products</h1>
           <p className="products-count">
-            {productItems.length > 0 && `${productItems.length} products found`}
+            {products?.totalProducts > 0 && `${productItems.length} products found`}
           </p>
         </div>
         <div className="page-actions">
@@ -68,17 +106,27 @@ const ProductsList = () => {
           {renderSkeletons()}
         </div>
       ) : productItems.length > 0 ? (
-        <div className="products-grid">
-          {productItems.map((product) => (
-            <ProductItem key={product._id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className="products-grid">
+            {productItems.map((product) => (
+              <ProductItem key={product._id} product={product} />
+            ))}
+          </div>
+          
+          {pagination.totalPages > 1 && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </>
       ) : (
         <div className="empty-state">
           <div className="empty-state-icon">📦</div>
           <h2>No products found</h2>
           <p>
-            {Object.keys(filterCriteria).length > 0
+            {filterCriteria.searchTerm || filterCriteria.category
               ? "Try adjusting your filters"
               : "Start by adding some products"}
           </p>

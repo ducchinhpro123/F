@@ -7,7 +7,8 @@ var logger = require('morgan');
 var usersRouter = require('./routes/users');
 var apiRouter = require('./routes/api');
 var authRouter = require('./routes/auth');
-var productsRouter = require('./routes/products'); // Add this line
+var productsRouter = require('./routes/products');
+var categoriesRouter = require('./routes/categories'); // Add this line
 
 // Connect mongodb
 var connect_mongodb = require('./database_configuration/ConnectMongodb');
@@ -35,10 +36,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/users', usersRouter);
+app.use('/users', usersRouter);
 app.use('/api', apiRouter);
-// app.use('/auth', authRouter);
-// app.use('/products', productsRouter); 
+app.use('/auth', authRouter);
+app.use('/products', productsRouter);
+app.use('/categories', categoriesRouter); // Add this line
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
