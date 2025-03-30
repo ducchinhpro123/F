@@ -4,16 +4,17 @@ const PRODUCTS_ENDPOINT = '/products';
 
 /**
  * Get all products
+ * @param {Object} filters - Optional query parameters
  * @returns {Promise<Array>} Array of products
  */
-export async function getProducts() {
-  return api.get(PRODUCTS_ENDPOINT);
+export async function getProducts(filters = {}) {
+  return api.get(PRODUCTS_ENDPOINT, { params: filters });
 }
 
 /**
  * Get a product by ID
  * @param {string} id - Product ID
- * @returns {Promise<Object>} Product data
+ * @returns {Promise<Object>} Product data with details
  */
 export async function getProductById(id) {
   return api.get(`${PRODUCTS_ENDPOINT}/${id}`);
@@ -21,27 +22,29 @@ export async function getProductById(id) {
 
 /**
  * Create a new product
- * @param {Object} productData - Product data
+ * @param {Object|FormData} productData - Product data or FormData object
  * @returns {Promise<Object>} Created product
  */
 export async function createProduct(productData) {
-  return api.post(PRODUCTS_ENDPOINT, productData);
+  const data = await api.post(PRODUCTS_ENDPOINT, productData);
+  return data.product;
 }
 
 /**
  * Update a product
  * @param {string} id - Product ID
- * @param {Object} productData - Updated product data
+ * @param {Object|FormData} productData - Updated product data or FormData object
  * @returns {Promise<Object>} Updated product
  */
 export async function updateProduct(id, productData) {
-  return api.put(`${PRODUCTS_ENDPOINT}/${id}`, productData);
+  const data = await api.put(`${PRODUCTS_ENDPOINT}/${id}`, productData);
+  return data.product;
 }
 
 /**
  * Delete a product
  * @param {string} id - Product ID
- * @returns {Promise<void>}
+ * @returns {Promise<Object>} Deletion confirmation
  */
 export async function deleteProduct(id) {
   return api.delete(`${PRODUCTS_ENDPOINT}/${id}`);
@@ -56,11 +59,20 @@ export async function searchProducts(query) {
   return api.get(`${PRODUCTS_ENDPOINT}/search?q=${encodeURIComponent(query)}`);
 }
 
+/**
+ * Get featured products
+ * @returns {Promise<Array>} Array of featured products
+ */
+export async function getFeaturedProducts() {
+  return api.get(`${PRODUCTS_ENDPOINT}/featured`);
+}
+
 export default {
   getProducts,
   getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
-  searchProducts
+  searchProducts,
+  getFeaturedProducts
 };
