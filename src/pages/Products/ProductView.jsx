@@ -92,7 +92,7 @@ const ProductView = () => {
       <div className="product-view-header">
         <h1>Product Details</h1>
         <div className="product-view-actions">
-          <Link to={`/products/${id}`} className="btn btn-primary">
+          <Link to={`/products/edit/${id}`} className="btn btn-primary">
             Edit Product
           </Link>
           <button 

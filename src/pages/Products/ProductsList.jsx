@@ -7,7 +7,6 @@ import Pagination from "../../components/common/Pagination";
 
 const ProductsList = () => {
   const { products, loading, error, fetchProducts } = useProductContext();
-  const [searchTerm, setSearchTerm] = useState("");
 
   const [filterCriteria, setFilterCriteria] = useState({
     searchTerm: "",
@@ -19,40 +18,38 @@ const ProductsList = () => {
     totalPages: 1,
     limit: 10
   });
-
-  // Fetch products when component mounts, filter criteria changes, or page changes
+  
   useEffect(() => {
     const queryParams = {
       page: pagination.currentPage,
       limit: pagination.limit
     };
     
-    // Only add non-empty filter values to query parameters
     if (filterCriteria.searchTerm) {
       queryParams.search = filterCriteria.searchTerm;
     }
     if (filterCriteria.category) {
       queryParams.category = filterCriteria.category;
     }
-        
     fetchProducts(queryParams);
-  }, [filterCriteria, pagination.currentPage]);
+  }, [filterCriteria.searchTerm, filterCriteria.category, pagination.currentPage, pagination.limit, fetchProducts]);
 
-  // Update pagination state when products data changes
   useEffect(() => {
-    if (products) {
-      setPagination({
-        currentPage: products.currentPage || 1,
-        totalPages: products.totalPages || 1,
-        limit: pagination.limit
-      });
+    if (products && (
+      products.currentPage !== pagination.currentPage || 
+      products.totalPages !== pagination.totalPages
+    )) {
+      setPagination(prev => ({
+        ...prev,
+        currentPage: products.currentPage || prev.currentPage,
+        totalPages: products.totalPages || prev.totalPages
+      }));
     }
   }, [products]);
 
   // Extract the actual products array from the response
   const productItems = products?.products || [];
   
-  // Handle filter changes - reset to page 1 when filters change
   const handleFilterChange = (filters) => {
     setFilterCriteria(filters);
     setPagination(prev => ({ ...prev, currentPage: 1 }));
@@ -61,7 +58,6 @@ const ProductsList = () => {
   // Handle page change
   const handlePageChange = (newPage) => {
     setPagination(prev => ({ ...prev, currentPage: newPage }));
-    // Scroll to top of product list for better UX
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -78,10 +74,6 @@ const ProductsList = () => {
       </div>
     ));
   };
-
-  const handleSearchTerm = (e) => {
-
-  }
 
   return (
     <div className="products-page">
@@ -118,7 +110,11 @@ const ProductsList = () => {
         <>
           <div className="products-grid">
             {productItems.map((product) => (
-              <ProductItem key={product._id} product={product} />
+              <ProductItem 
+                key={product._id} 
+                product={product} 
+                pageInfo={`page=${pagination.currentPage}`} 
+              />
             ))}
           </div>
           
