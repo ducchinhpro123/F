@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useProductContext } from "../../context/ProductContext";
 import ProductItem from "../../components/products/ProductItem";
 import ProductFilter from "../../components/products/ProductFilter";
@@ -7,24 +7,26 @@ import Pagination from "../../components/common/Pagination";
 
 const ProductsList = () => {
   const { products, loading, error, fetchProducts } = useProductContext();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
   const [filterCriteria, setFilterCriteria] = useState({
-    searchTerm: "",
-    category: "",
+    searchTerm: searchParams.get("search") || "",
+    category: searchParams.get("category") || "",
   });
 
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
+  const [paginationInfo, setPaginationInfo] = useState({
     totalPages: 1,
-    limit: 10
+    limit: 10,
+    totalProducts: 0,
   });
-  
-  useEffect(() => {
+
+  const loadProducts = useCallback(() => {
     const queryParams = {
-      page: pagination.currentPage,
-      limit: pagination.limit
+      page: currentPage,
+      limit: paginationInfo.limit,
     };
-    
     if (filterCriteria.searchTerm) {
       queryParams.search = filterCriteria.searchTerm;
     }
@@ -32,38 +34,62 @@ const ProductsList = () => {
       queryParams.category = filterCriteria.category;
     }
     fetchProducts(queryParams);
-  }, [filterCriteria.searchTerm, filterCriteria.category, pagination.currentPage, pagination.limit, fetchProducts]);
+  }, [
+    currentPage,
+    filterCriteria.searchTerm,
+    filterCriteria.category,
+    paginationInfo.limit,
+    fetchProducts,
+  ]);
 
   useEffect(() => {
-    if (products && (
-      products.currentPage !== pagination.currentPage || 
-      products.totalPages !== pagination.totalPages
-    )) {
-      setPagination(prev => ({
+    loadProducts();
+  }, [loadProducts]);
+
+  useEffect(() => {
+    if (products) {
+      setPaginationInfo((prev) => ({
         ...prev,
-        currentPage: products.currentPage || prev.currentPage,
-        totalPages: products.totalPages || prev.totalPages
+        totalPages: products.totalPages || 1,
+        totalProducts: products.totalProducts || 0,
       }));
     }
   }, [products]);
 
-  // Extract the actual products array from the response
   const productItems = products?.products || [];
-  
+
   const handleFilterChange = (filters) => {
     setFilterCriteria(filters);
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setSearchParams(
+      (prev) => {
+        const newParams = new URLSearchParams(prev);
+        if (filters.searchTerm) newParams.set("search", filters.searchTerm); 
+        else newParams.delete("search");
+
+        if (filters.category) newParams.set("category", filters.category);
+        else newParams.delete("category");
+        // Default page is 1
+        newParams.set("page", "1");
+        return newParams;
+      },
+      { replace: true }
+    );
   };
 
-  // Handle page change
   const handlePageChange = (newPage) => {
-    setPagination(prev => ({ ...prev, currentPage: newPage }));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setSearchParams(
+      (prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set("page", newPage.toString());
+        return newParams;
+      },
+      { replace: true }
+    );
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Render loading skeletons
   const renderSkeletons = () => {
-    return Array(10).fill().map((_, index) => (
+    return Array(paginationInfo.limit).fill().map((_, index) => (
       <div key={index} className="product-skeleton">
         <div className="skeleton-image"></div>
         <div className="skeleton-content">
@@ -81,7 +107,7 @@ const ProductsList = () => {
         <div className="page-header-content">
           <h1>Products</h1>
           <p className="products-count">
-            {products?.totalProducts > 0 && `${productItems.length} products found`}
+            {paginationInfo.totalProducts > 0 && `${paginationInfo.totalProducts} products found`}
           </p>
         </div>
         <div className="page-actions">
@@ -90,38 +116,36 @@ const ProductsList = () => {
           </Link>
         </div>
       </div>
-      
-      <ProductFilter onFilterChange={handleFilterChange} />
-      
+
+      <ProductFilter onFilterChange={handleFilterChange} initialFilters={filterCriteria} />
+
       {error && (
         <div className="error-message">
           <p>Error loading products: {error}</p>
-          <button className="btn" onClick={() => fetchProducts()}>
+          <button className="btn" onClick={loadProducts}>
             Try Again
           </button>
         </div>
       )}
-      
+
       {loading ? (
-        <div className="products-grid">
-          {renderSkeletons()}
-        </div>
+        <div className="products-grid">{renderSkeletons()}</div>
       ) : productItems.length > 0 ? (
         <>
           <div className="products-grid">
             {productItems.map((product) => (
-              <ProductItem 
-                key={product._id} 
-                product={product} 
-                pageInfo={`page=${pagination.currentPage}`} 
+              <ProductItem
+                key={product._id}
+                product={product}
+                pageInfo={`page=${currentPage}`}
               />
             ))}
           </div>
-          
-          {pagination.totalPages > 1 && (
+
+          {paginationInfo.totalPages > 1 && (
             <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
+              currentPage={currentPage}
+              totalPages={paginationInfo.totalPages}
               onPageChange={handlePageChange}
             />
           )}

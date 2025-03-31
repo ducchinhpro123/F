@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { useProductContext } from "../../context/ProductContext";
 import { formatDate } from "../../utils/formatters";
 import Skeleton from "react-loading-skeleton";
@@ -9,19 +9,38 @@ import "./ProductView.css";
 const ProductView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentProduct, fetchProductById, loading, deleteProduct } = useProductContext();
+  const location = useLocation();
+  const { currentProduct, fetchProductById, loading, deleteProduct } =
+    useProductContext();
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const pageNumber = useRef(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const page = params.get("page");
+    if (page) {
+      pageNumber.current = page;
+    }
+  }, [location.search]);
 
   useEffect(() => {
     fetchProductById(id);
   }, [id, fetchProductById]);
+
+  const backToProducts = () => {
+    const returnPage = pageNumber.current || 1;
+    navigate(`/products?page=${returnPage}`);
+  };
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         setIsDeleting(true);
         await deleteProduct(id);
-        navigate("/products");
+        const returnPage = pageNumber.current || 1;
+
+        navigate(`/products?page=${returnPage}`);
       } catch (error) {
         console.error("Error deleting product:", error);
         setIsDeleting(false);
@@ -95,8 +114,8 @@ const ProductView = () => {
           <Link to={`/products/edit/${id}`} className="btn btn-primary">
             Edit Product
           </Link>
-          <button 
-            className="btn btn-danger" 
+          <button
+            className="btn btn-danger"
             onClick={handleDelete}
             disabled={isDeleting}
           >
@@ -113,7 +132,8 @@ const ProductView = () => {
             className="product-view-image"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = "https://via.placeholder.com/600x400?text=No+Image";
+              e.target.src =
+                "https://via.placeholder.com/600x400?text=No+Image";
             }}
           />
           {product.featured && <span className="featured-badge">Featured</span>}
@@ -121,7 +141,9 @@ const ProductView = () => {
 
         <div className="product-info">
           <h2 className="product-title">{product.name}</h2>
-          <p className="product-category">{product.category?.name || "Uncategorized"}</p>
+          <p className="product-category">
+            {product.category?.name || "Uncategorized"}
+          </p>
           <p className="product-price">${product.price?.toFixed(2)}</p>
 
           <div className="product-meta">
@@ -170,9 +192,15 @@ const ProductView = () => {
       </div>
 
       <div className="product-view-footer">
-        <Link to="/products" className="btn btn-secondary">
+        <button onClick={backToProducts} className="btn btn-secondary">
           Back to Products
-        </Link>
+        </button>
+        {
+          // <Link
+          // to="/products" className="btn btn-secondary">
+          //   Back to Products
+          // </Link>
+        }
       </div>
     </div>
   );

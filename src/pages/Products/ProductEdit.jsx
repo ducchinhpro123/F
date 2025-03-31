@@ -1,7 +1,7 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useProductContext } from "../../context/ProductContext";
 import { useCategoryContext } from "../../context/CategoryContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -10,6 +10,7 @@ import "./ProductEdit.css";
 const ProductEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); 
 
   const { currentProduct, fetchProductById, updateProduct, loading } = useProductContext();
   const { categories, fetchCategories, loading: categoriesLoading, } = useCategoryContext();
@@ -20,14 +21,7 @@ const ProductEdit = () => {
     error: null,
   });
 
-  const {
-    control,
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    watch,
-  } = useForm({
+  const { control, register, handleSubmit, formState: { errors }, reset, watch, } = useForm({
     defaultValues: {
       name: "",
       image: null,
@@ -36,10 +30,21 @@ const ProductEdit = () => {
 
   const categoryItems = categories?.categories || [];
 
+  const pageRef = useRef(null); // Use ref to store the page number
+
   useEffect(() => {
     fetchProductById(id);
     fetchCategories(); // Fetch categories when component mounts
   }, [id, fetchProductById, fetchCategories]);
+
+  // Get page number from query params on mount
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const page = params.get('page');
+    if (page) {
+      pageRef.current = page; 
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (currentProduct?.product) {
@@ -166,10 +171,13 @@ const ProductEdit = () => {
 
       await updateProduct(id, formData);
       setUpdateStatus({ loading: false, success: true, error: null });
-
+      
+      // Retrieve the page number, default to 1 if not found
+      const returnPage = pageRef.current || 1;
+      
       // Show success message briefly before redirecting
       setTimeout(() => {
-        navigate("/products");
+        navigate(`/products?page=${returnPage}`); 
       }, 1500);
     } catch (error) {
       setUpdateStatus({
