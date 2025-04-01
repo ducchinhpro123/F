@@ -43,7 +43,7 @@ const ProductItem = ({ product, pageInfo = '' }) => {
           alt={product.name}
           onError={(e) => {
             e.target.onerror = null;
-            e.target.src = "https://via.placeholder.com/300x200?text=No+Image";
+            e.target.src = "https://placehold.jp/150x150.png";
           }}
         />
       </div>
