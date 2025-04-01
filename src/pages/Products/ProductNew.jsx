@@ -66,7 +66,7 @@ const ProductNew = () => {
       setSubmitStatus({ loading: false, success: true, error: null });
       reset();
 
-      setTimeout(() => navigate(`/products/${result._id}`), 1000);
+      setTimeout(() => navigate(`/products/view/${result._id}`), 1000);
     } catch (error) {
       // console.error(e);
       setSubmitStatus({

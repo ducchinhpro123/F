@@ -67,10 +67,10 @@ const ProductItem = ({ product, pageInfo = '' }) => {
       </div>
 
       <div className="product-actions">
-        <Link to={`/products/edit/${product._id}`} className="btn btn-edit">
+        <Link to={`/products/edit/${product._id}?${pageInfo}`} className="btn btn-edit">
           Edit
         </Link>
-        <Link to={`/products/view/${product._id}`} className="btn btn-primary">
+        <Link to={`/products/view/${product._id}?${pageInfo}`} className="btn btn-primary">
           View
         </Link>
         <button 

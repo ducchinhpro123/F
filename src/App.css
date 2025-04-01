@@ -45,7 +45,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  overflow-x: hidden; /* Prevent horizontal overflow on zoom */
+  /* overflow-x: hidden; /1* Prevent horizontal overflow on zoom *1/ */
 }
 
 .content-container {
@@ -170,6 +170,21 @@ body {
 
 .btn:hover {
   background-color: #1565c0;
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  color: white;
+  border: 1px solid var(--danger-color);
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.btn-danger:focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5);
 }
 
 /* Grid layouts */

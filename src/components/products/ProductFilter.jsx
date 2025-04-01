@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCategoryContext } from "../../context/CategoryContext";
 
-const ProductFilter = ({ onFilterChange }) => {
+const ProductFilter = ({ onFilterChange  }) => {
   const [filters, setFilters] = useState({
     searchTerm: "",
     category: "",
@@ -11,6 +11,7 @@ const ProductFilter = ({ onFilterChange }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     const updatedFilters = {
       ...filters,
       [name]: value,
