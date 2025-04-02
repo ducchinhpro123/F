@@ -8,9 +8,8 @@ function connect_mongodb() {
   let mongooseURI = process.env.MONGODB_API;
 
   if (!mongooseURI) {
-    console.err(
-      "MONGODB_API not found, consider create a .env file and export your MONGODB_API",
-    );
+    console.error("Some error...");
+
     return -1;
   }
 
