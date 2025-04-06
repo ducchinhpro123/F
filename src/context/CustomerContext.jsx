@@ -1,3 +1,5 @@
+//quan ly thong tin va chia se du lieu giua cac component vd : page home va product can hien thi tat cac san pham 
+//thay vi truy van o ca 2 thi ta dung context de chia se du lieu
 import { createContext, useContext, useState, useCallback } from 'react';
 import { getCustomers, getCustomerById, createCustomer, updateCustomer } from '../services/customerService';
 

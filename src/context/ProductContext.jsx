@@ -1,81 +1,129 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import { getProducts, getProductById, createProduct, updateProduct, deleteProduct } from '../services/productService';
+import { 
+  getProducts, 
+  getProductById, 
+  createProduct as apiCreateProduct, 
+  updateProduct as apiUpdateProduct,
+  deleteProduct as apiDeleteProduct 
+} from '../services/productService';
 
 const ProductContext = createContext();
 
 export const ProductProvider = ({ children }) => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(null);
   const [currentProduct, setCurrentProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchProducts = useCallback(async () => {
+  // Fetch all products with filter and pagination support
+  const fetchProducts = useCallback(async (params = {}) => {
     setLoading(true);
+    setError(null);
     try {
-      const data = await getProducts();
+      const data = await getProducts(params);
       setProducts(data);
-      setError(null);
     } catch (err) {
-      setError(err.message);
+      console.error('Error fetching products:', err);
+      setError(err.message || 'Failed to load products');
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // Fetch product by ID
   const fetchProductById = useCallback(async (id) => {
     setLoading(true);
+    setError(null);
     try {
       const data = await getProductById(id);
       setCurrentProduct(data);
-      setError(null);
     } catch (err) {
-      setError(err.message);
+      console.error('Error fetching product:', err);
+      setError(err.message || `Failed to load product with ID: ${id}`);
+      setCurrentProduct(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const handleCreateProduct = useCallback(async (productData) => {
+  // Create a new product
+  const createProduct = useCallback(async (productData) => {
     setLoading(true);
+    setError(null);
     try {
-      const data = await createProduct(productData);
-      setProducts(prev => [...prev, data]);
-      return data;
+      const createdProduct = await apiCreateProduct(productData);
+      setProducts(prev => {
+        if (!prev || !prev.products) return prev;
+        return {
+          ...prev,
+          products: [createdProduct, ...prev.products]
+        };
+      });
+      return createdProduct;
     } catch (err) {
-      setError(err.message);
+      console.error('Error creating product:', err);
+      setError(err.message || 'Failed to create product');
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const handleUpdateProduct = useCallback(async (id, productData) => {
+  // Update existing product
+  const updateProduct = useCallback(async (id, productData) => {
     setLoading(true);
+    setError(null);
     try {
-      const data = await updateProduct(id, productData);
-      setProducts(prev => prev.map(item => item.id === id ? data : item));
-      return data;
+      const updatedProduct = await apiUpdateProduct(id, productData);
+      
+      // Update products list if it exists
+      setProducts(prev => {
+        if (!prev || !prev.products) return prev;
+        return {
+          ...prev,
+          products: prev.products.map(p => 
+            p._id === id ? updatedProduct : p
+          )
+        };
+      });
+      
+      return updatedProduct;
     } catch (err) {
-      setError(err.message);
+      console.error('Error updating product:', err);
+      setError(err.message || `Failed to update product with ID: ${id}`);
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const handleDeleteProduct = useCallback(async (id) => {
+  // Delete product
+  const deleteProduct = useCallback(async (id) => {
     setLoading(true);
+    setError(null);
     try {
-      await deleteProduct(id);
-      setProducts(prev => prev.filter(item => item.id !== id));
+      await apiDeleteProduct(id);
+      
+      // Remove from products list if it exists
+      setProducts(prev => {
+        if (!prev || !prev.products) return prev;
+        return {
+          ...prev,
+          products: prev.products.filter(p => p._id !== id)
+        };
+      });
+      
+      return true;
     } catch (err) {
-      setError(err.message);
+      console.error('Error deleting product:', err);
+      setError(err.message || `Failed to delete product with ID: ${id}`);
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // Context value
   const value = {
     products,
     currentProduct,
@@ -83,9 +131,9 @@ export const ProductProvider = ({ children }) => {
     error,
     fetchProducts,
     fetchProductById,
-    createProduct: handleCreateProduct,
-    updateProduct: handleUpdateProduct,
-    deleteProduct: handleDeleteProduct
+    createProduct,
+    updateProduct,
+    deleteProduct
   };
 
   return (

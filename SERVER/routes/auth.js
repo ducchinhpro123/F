@@ -1,6 +1,6 @@
-const express = require('express');
-const User = require('../models/User');
-const { generateToken } = require('../middleware/auth');
+import express from 'express';
+import User from '../models/User.js'; // Đảm bảo thêm đuôi .js khi sử dụng ESM
+import { generateToken } from '../middleware/auth.js'; // Thêm .js nếu cần
 
 const router = express.Router();
 
@@ -107,4 +107,4 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router

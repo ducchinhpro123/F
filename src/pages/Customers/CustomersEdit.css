@@ -1,0 +1,145 @@
+/* Tổng thể */
+.edit-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+/* Card chỉnh sửa */
+.edit-card {
+  padding: 30px;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Tiêu đề */
+.edit-title {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Nhóm input */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+input:disabled {
+  background-color: #f5f5f5;
+  color: #888;
+}
+
+/* Role select */
+.form-group.select-role {
+  margin-bottom: 40px;
+}
+
+.select-role select {
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.select-role select:focus {
+  outline: none;
+  border-color: #28a745;
+}
+
+/* Avatar hiển thị bên cạnh input */
+.avatar-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.avatar-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.avatar-preview-wrapper {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ccc;
+}
+
+/* Button group */
+.button-group {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+button {
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+/* Back button */
+.cancel-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #c82333;
+}
+
+/* Save button */
+.save-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.save-btn:hover {
+  background-color: #218838;
+}
+
+/* Loading và Error */
+.loading-text,
+.error-text {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.error-text {
+  color: #dc3545;
+}
+
+.form-error {
+  margin-bottom: 15px;
+}

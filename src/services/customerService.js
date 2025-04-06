@@ -1,6 +1,10 @@
+// api voi customer
 import { api } from './api';
 
+
 const CUSTOMERS_ENDPOINT = '/customers';
+
+
 
 /**
  * Get all customers

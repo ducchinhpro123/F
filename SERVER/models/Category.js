@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose'
 
 const categorySchema = new mongoose.Schema({
   name: {
@@ -12,10 +12,6 @@ const categorySchema = new mongoose.Schema({
     type: String,
     maxlength: [500, 'Description cannot exceed 500 characters']
   },
-  image: {
-    type: String,
-    default: 'default-category.jpg'
-  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -24,4 +20,4 @@ const categorySchema = new mongoose.Schema({
 
 const Category = mongoose.model('Category', categorySchema);
 
-module.exports = Category;
+export default Category;

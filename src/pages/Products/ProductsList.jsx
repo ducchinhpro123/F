@@ -1,30 +1,95 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useProductContext } from "../../context/ProductContext";
 import ProductItem from "../../components/products/ProductItem";
 import ProductFilter from "../../components/products/ProductFilter";
+import Pagination from "../../components/common/Pagination";
 
 const ProductsList = () => {
   const { products, loading, error, fetchProducts } = useProductContext();
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [filterCriteria, setFilterCriteria] = useState({});
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+
+  const [filterCriteria, setFilterCriteria] = useState({
+    searchTerm: searchParams.get("search") || "",
+    category: searchParams.get("category") || "",
+  });
+
+  const [paginationInfo, setPaginationInfo] = useState({
+    totalPages: 1,
+    limit: 10,
+    totalProducts: 0,
+  });
+
+  const loadProducts = useCallback(() => {
+    const queryParams = {
+      page: currentPage,
+      limit: paginationInfo.limit,
+    };
+    if (filterCriteria.searchTerm) {
+      queryParams.search = filterCriteria.searchTerm;
+    }
+    if (filterCriteria.category) {
+      queryParams.category = filterCriteria.category;
+    }
+    fetchProducts(queryParams);
+  }, [
+    currentPage,
+    filterCriteria.searchTerm,
+    filterCriteria.category,
+    paginationInfo.limit,
+    fetchProducts,
+  ]);
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    loadProducts();
+  }, [loadProducts]);
 
-  // Extract the actual products array from the response
+  useEffect(() => {
+    if (products) {
+      setPaginationInfo((prev) => ({
+        ...prev,
+        totalPages: products.totalPages || 1,
+        totalProducts: products.totalProducts || 0,
+      }));
+    }
+  }, [products]);
+
   const productItems = products?.products || [];
-  
-  // Handle filter changes
+
   const handleFilterChange = (filters) => {
     setFilterCriteria(filters);
-    // Apply client-side filtering if needed (or you can call fetchProducts with filters)
+    setSearchParams(
+      (prev) => {
+        const newParams = new URLSearchParams(prev);
+        if (filters.searchTerm) newParams.set("search", filters.searchTerm); 
+        else newParams.delete("search");
+
+        if (filters.category) newParams.set("category", filters.category);
+        else newParams.delete("category");
+        // Default page is 1
+        newParams.set("page", "1");
+        return newParams;
+      },
+      { replace: true }
+    );
   };
 
-  // Render loading skeletons
+  const handlePageChange = (newPage) => {
+    setSearchParams(
+      (prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set("page", newPage.toString());
+        return newParams;
+      },
+      { replace: true }
+    );
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const renderSkeletons = () => {
-    return Array(10).fill().map((_, index) => (
+    return Array(paginationInfo.limit).fill().map((_, index) => (
       <div key={index} className="product-skeleton">
         <div className="skeleton-image"></div>
         <div className="skeleton-content">
@@ -42,7 +107,7 @@ const ProductsList = () => {
         <div className="page-header-content">
           <h1>Products</h1>
           <p className="products-count">
-            {productItems.length > 0 && `${productItems.length} products found`}
+            {paginationInfo.totalProducts > 0 && `${paginationInfo.totalProducts} products found`}
           </p>
         </div>
         <div className="page-actions">
@@ -51,34 +116,46 @@ const ProductsList = () => {
           </Link>
         </div>
       </div>
-      
-      <ProductFilter onFilterChange={handleFilterChange} />
-      
+
+      <ProductFilter onFilterChange={handleFilterChange} initialFilters={filterCriteria} />
+
       {error && (
         <div className="error-message">
           <p>Error loading products: {error}</p>
-          <button className="btn" onClick={() => fetchProducts()}>
+          <button className="btn" onClick={loadProducts}>
             Try Again
           </button>
         </div>
       )}
-      
+
       {loading ? (
-        <div className="products-grid">
-          {renderSkeletons()}
-        </div>
+        <div className="products-grid">{renderSkeletons()}</div>
       ) : productItems.length > 0 ? (
-        <div className="products-grid">
-          {productItems.map((product) => (
-            <ProductItem key={product._id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className="products-grid">
+            {productItems.map((product) => (
+              <ProductItem
+                key={product._id}
+                product={product}
+                pageInfo={`page=${currentPage}`}
+              />
+            ))}
+          </div>
+
+          {paginationInfo.totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={paginationInfo.totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </>
       ) : (
         <div className="empty-state">
           <div className="empty-state-icon">📦</div>
           <h2>No products found</h2>
           <p>
-            {Object.keys(filterCriteria).length > 0
+            {filterCriteria.searchTerm || filterCriteria.category
               ? "Try adjusting your filters"
               : "Start by adding some products"}
           </p>

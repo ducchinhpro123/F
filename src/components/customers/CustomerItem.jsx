@@ -1,3 +1,4 @@
+//hien thi thong tin chi tiet khach hang cung voi thao tac sua va xoa
 import { Link } from 'react-router-dom';
 import { useCustomerContext } from '../../context/CustomerContext';
 

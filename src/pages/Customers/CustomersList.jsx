@@ -1,29 +1,48 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useCustomerContext } from '../../context/CustomerContext';
-import CustomerItem from '../../components/customers/CustomerItem';
-import CustomerFilter from '../../components/customers/CustomerFilter';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import "../Customers/CustomersList.css";
 
 const CustomersList = () => {
-  const { customers, loading, fetchCustomers } = useCustomerContext();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/users/getAllUser");
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   return (
     <div className="customers-page">
       <div className="page-header">
-        <h1>Customers</h1>
-        <Link to="/customers/new" className="btn">Add New Customer</Link>
+        <h1>Customer</h1>
+        <Link to="/signup?redirect=/customers" className="btn">
+        Add customer User
+        </Link>
       </div>
-      <CustomerFilter />
       {loading ? (
-        <p>Loading customers...</p>
+        <p>Loading customer...</p>
       ) : (
         <div className="customers-grid">
-          {customers.map(customer => (
-            <CustomerItem key={customer.id} customer={customer} />
+          {users.map((user) => (
+            <div key={user._id} className="customer-item">
+              <h3>{user.name}</h3>
+              <p>Username: {user.username}</p>
+              {/* Thêm link để xem chi tiết user */}
+              <Link to={`/customers/${user._id}`} className="btn btn-detail">
+                View Details
+              </Link>
+            </div>
           ))}
         </div>
       )}

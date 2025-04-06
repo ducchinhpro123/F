@@ -10,7 +10,7 @@ const Dashboard = () => {
   const [recentCustomers, setRecentCustomers] = useState([]);
 
   useEffect(() => {
-    // Get most recent products (up to 5)
+    
     if (products && products.length) {
       const sorted = [...products].sort((a, b) => 
         new Date(b.createdAt || 0) - new Date(a.createdAt || 0)

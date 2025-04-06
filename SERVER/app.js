@@ -1,51 +1,61 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+// Import dependencies using ES module syntax
+import express from 'express';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import createError from 'http-errors';
 
-var usersRouter = require('./routes/users');
-var apiRouter = require('./routes/api');
-var authRouter = require('./routes/auth');
-var productsRouter = require('./routes/products'); // Add this line
+// Import routes
+import usersRouter from './routes/users.js';
+import apiRouter from './routes/api.js';
+import authRouter from './routes/auth.js';
+import productsRouter from './routes/products.js';
+import categoriesRouter from './routes/categories.js';
 
-// Connect mongodb
-var connect_mongodb = require('./database_configuration/ConnectMongodb');
+// Import MongoDB connection
+import connect_mongodb from './database_configuration/ConnectMongodb.js';
+
+// Initialize express app
+const app = express();
+
+// Connect to MongoDB
 connect_mongodb();
 
-var app = express();
+// Middleware setup
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(express.static(path.join(path.dirname(''), 'public')));  // Serving static files
 
-// Enable CORS for React app
+// CORS configuration for React app
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   next();
 });
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// app.use('/users', usersRouter);
+// Use routes
+app.use('/users', usersRouter);
 app.use('/api', apiRouter);
-// app.use('/auth', authRouter);
-// app.use('/products', productsRouter); 
+app.use('/auth', authRouter);
+app.use('/products', productsRouter);
+app.use('/categories', categoriesRouter);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
+// Catch 404 and forward to error handler
+app.use((req, res, next) => {
   next(createError(404));
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
+// Error handler
+app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // Return error as JSON
+  
   res.status(err.status || 500);
   res.json({
     message: err.message,
@@ -53,4 +63,4 @@ app.use(function(err, req, res, next) {
   });
 });
 
-module.exports = app;
+export default app;

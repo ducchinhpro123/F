@@ -1,9 +1,10 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
-exports.protect = async (req, res, next) => {
+// Middleware to protect routes
+export const protect = async (req, res, next) => {
   let token;
 
   if (
@@ -16,27 +17,28 @@ exports.protect = async (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Not authorized to access this route'
+      message: 'Not authorized to access this route',
     });
   }
 
   try {
-    // Verify token
+    // Verify the token
     const decoded = jwt.verify(token, JWT_SECRET);
-    
+
     // Get user from the token
     req.user = await User.findById(decoded.id).select('-password');
-    
+
     next();
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: 'Not authorized to access this route'
+      message: 'Not authorized to access this route',
     });
   }
 };
 
-exports.generateToken = (user) => {
+// Function to generate JWT token
+export const generateToken = (user) => {
   return jwt.sign(
     { id: user._id, username: user.username, role: user.role },
     JWT_SECRET,

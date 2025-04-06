@@ -1,11 +1,16 @@
-var express = require('express');
-var router = express.Router();
-const { protect } = require('../middleware/auth');
-var ProductRoute = require('../routes/products');
-var UserRoute = require('../routes/users');
+//route chung cua cac api
+import express from 'express'
+import ProductRoute from '../routes/products.js';
+
+import UserRoute from '../routes/users.js';
+import CategoryRoute from '../routes/categories.js';
+
+const router = express.Router();
+// Định nghĩa các tuyến đường (routes) của bạn
 
 router.use('/products', ProductRoute);
 router.use('/users', UserRoute);
+router.use('/categories', CategoryRoute);
 
-
-module.exports = router;
+// Sample data
+export default router;

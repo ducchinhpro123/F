@@ -1,5 +1,6 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
+
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -21,6 +22,10 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  avatar: {
+    type: String,
+    default: '/avatars/avatar.jpg'
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -40,7 +45,6 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-
 // Method to compare passwords
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
@@ -48,4 +52,4 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+export default User;

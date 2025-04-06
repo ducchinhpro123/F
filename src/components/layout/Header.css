@@ -7,11 +7,14 @@
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   
-  /* Make the header sticky */
-  position: sticky;
+  /* Make the header fixed instead of sticky */
+  /* position: fixed; */
   top: 0;
-  z-index: 100; /* Ensure it stays above other elements */
-  width: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  width: auto; /* Let it size naturally based on left/right positioning */
+  /* margin-left: 250px; /1* Match sidebar width *1/ */
 }
 
 .header-left {
@@ -66,6 +69,11 @@
   justify-content: center;
 }
 
+/* User menu styles */
+.user-menu-container {
+  position: relative;
+}
+
 .user-menu {
   display: flex;
   align-items: center;
@@ -90,11 +98,90 @@
   justify-content: center;
   color: white;
   font-weight: 500;
+  overflow: hidden;
+}
+
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .user-name {
   font-size: 0.95rem;
   font-weight: 500;
+}
+
+/* User dropdown menu */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 220px;
+  z-index: 1000;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.user-dropdown-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.user-dropdown-header strong {
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.user-dropdown-header span {
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.user-dropdown-menu {
+  list-style: none;
+}
+
+.user-dropdown-menu li {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.user-dropdown-menu li:last-child {
+  border-bottom: none;
+}
+
+.user-dropdown-menu a,
+.user-dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  color: var(--text-color);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
+  text-decoration: none;
+}
+
+.user-dropdown-menu a:hover,
+.user-dropdown-menu button:hover {
+  background-color: var(--background-color);
+}
+
+.user-dropdown-menu li:last-child button {
+  color: var(--danger-color);
+}
+
+/* Add a class for when sidebar is collapsed */
+.sidebar-collapsed .header {
+  margin-left: 70px; /* Match collapsed sidebar width */
 }
 
 @media (max-width: 768px) {
@@ -112,5 +199,6 @@
   
   .header {
     padding: 0.75rem 1rem;
+    margin-left: 0; /* No margin when sidebar is hidden on mobile */
   }
 }

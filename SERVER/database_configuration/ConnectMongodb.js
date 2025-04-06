@@ -1,5 +1,5 @@
-var mongoose = require("mongoose");
-var dotenv = require("dotenv");
+import mongoose from "mongoose"
+import dotenv from "dotenv"
 
 dotenv.config();
 
@@ -19,4 +19,4 @@ function connect_mongodb() {
     .catch((err) => console.log("Cannot connect to the mongodb"));
 }
 
-module.exports = connect_mongodb;
+export default connect_mongodb;

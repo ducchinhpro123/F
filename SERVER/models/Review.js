@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema({
   user: {
@@ -74,4 +74,5 @@ reviewSchema.post('remove', function() {
 
 const Review = mongoose.model('Review', reviewSchema);
 
-module.exports = Review;
+export default reviewSchema;
+
