@@ -11,11 +11,6 @@ const ProductsList = () => {
 
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
-  const [filterCriteria, setFilterCriteria] = useState({
-    searchTerm: searchParams.get("search") || "",
-    category: searchParams.get("category") || "",
-  });
-
   const [paginationInfo, setPaginationInfo] = useState({
     totalPages: 1,
     limit: 10,
@@ -27,19 +22,21 @@ const ProductsList = () => {
       page: currentPage,
       limit: paginationInfo.limit,
     };
-    if (filterCriteria.searchTerm) {
-      queryParams.search = filterCriteria.searchTerm;
+
+    if (searchParams.get("search") !== "") {
+      queryParams.search = searchParams.get("search");
     }
-    if (filterCriteria.category) {
-      queryParams.category = filterCriteria.category;
+
+    if (searchParams.get("category") !== "") {
+      queryParams.category = searchParams.get("category");
     }
+
     fetchProducts(queryParams);
   }, [
     currentPage,
-    filterCriteria.searchTerm,
-    filterCriteria.category,
     paginationInfo.limit,
     fetchProducts,
+    searchParams
   ]);
 
   useEffect(() => {
@@ -59,20 +56,17 @@ const ProductsList = () => {
   const productItems = products?.products || [];
 
   const handleFilterChange = (filters) => {
-    setFilterCriteria(filters);
     setSearchParams(
       (prev) => {
         const newParams = new URLSearchParams(prev);
-        if (filters.searchTerm) newParams.set("search", filters.searchTerm); 
-        else newParams.delete("search");
+        filters.searchTerm && newParams.set("search", filters.searchTerm);
+        filters.category && newParams.set("category", filters.category);
 
-        if (filters.category) newParams.set("category", filters.category);
-        else newParams.delete("category");
         // Default page is 1
         newParams.set("page", "1");
         return newParams;
       },
-      { replace: true }
+      { replace: false }
     );
   };
 
@@ -83,7 +77,7 @@ const ProductsList = () => {
         newParams.set("page", newPage.toString());
         return newParams;
       },
-      { replace: true }
+      { replace: false }
     );
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -117,7 +111,7 @@ const ProductsList = () => {
         </div>
       </div>
 
-      <ProductFilter onFilterChange={handleFilterChange} initialFilters={filterCriteria} />
+      <ProductFilter onFilterChange={handleFilterChange}  />
 
       {error && (
         <div className="error-message">
@@ -154,13 +148,15 @@ const ProductsList = () => {
         <div className="empty-state">
           <div className="empty-state-icon">📦</div>
           <h2>No products found</h2>
+          {/*
           <p>
             {filterCriteria.searchTerm || filterCriteria.category
               ? "Try adjusting your filters"
               : "Start by adding some products"}
           </p>
+            */}
           <Link to="/products/new" className="btn btn-primary">
-            Add Your First Product
+            Add Your New Product
           </Link>
         </div>
       )}
