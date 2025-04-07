@@ -15,6 +15,7 @@ import { ProductProvider } from "./context/ProductContext";
 import { CategoryProvider } from "./context/CategoryContext";
 import { CustomerProvider } from "./context/CustomerContext";
 import { AuthProvider } from "./context/AuthContext";
+import { OrderProvider } from './context/OrderContext';
 import "./App.css";
 
 function App() {
@@ -24,83 +25,85 @@ function App() {
         <CategoryProvider>
           <ProductProvider>
             <CustomerProvider>
-              <Routes>
-                {/* Auth routes (outside layout) */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
+              <OrderProvider>
+                <Routes>
+                  {/* Auth routes (outside layout) */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
 
-                {/* Protected routes (inside layout) */}
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Dashboard />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ProfilePage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/products"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ProductsList />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/products/new"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ProductNew />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/products/edit/:id"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ProductEdit />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/products/view/:id"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ProductView />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/customers"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <CustomersList />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
+                  {/* Protected routes (inside layout) */}
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <Dashboard />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ProfilePage />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/products"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ProductsList />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/products/new"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ProductNew />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/products/edit/:id"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ProductEdit />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/products/view/:id"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <ProductView />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/customers"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <CustomersList />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                </Routes>
+              </OrderProvider>
             </CustomerProvider>
           </ProductProvider>
         </CategoryProvider>

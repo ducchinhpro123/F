@@ -23,7 +23,7 @@ export async function apiRequest(endpoint, options = {}) {
     delete defaultHeaders['Content-Type'];
   }
   
-<<<<<<< HEAD
+
   // Don't set content-type for FormData (browser will set it with boundary)
   if (options.formData) {
     delete defaultHeaders['Content-Type'];
@@ -42,8 +42,7 @@ export async function apiRequest(endpoint, options = {}) {
     delete config.formData;
   }
   
-=======
->>>>>>> 479b5cdd100fdf8f9dd1624a9f691ca58718d819
+
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,

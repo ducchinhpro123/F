@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useProductContext } from "../../context/ProductContext";
 import { useState } from 'react';
 
-const ProductItem = ({ product, pageInfo = '' }) => {
+const ProductItem = ({ product, pageInfo = '', compact = false }) => {
   // Determine stock status
   const [isDeleting, setIsDeleting] = useState();
 
@@ -32,7 +32,40 @@ const ProductItem = ({ product, pageInfo = '' }) => {
       }
     }
   };
+  
+  // Format price safely
+  const formatPrice = (price) => {
+    const parsedPrice = parseFloat(price);
+    return isNaN(parsedPrice) ? '0.00' : parsedPrice.toFixed(2);
+  };
 
+  // Render compact mode (used in dashboard)
+  if (compact) {
+    return (
+      <div className="product-item">
+        <div className="product-image">
+          <img
+            src={product.image ? `http://localhost:3000${product.image}` : "https://placehold.jp/150x150.png"}
+            alt={product.name}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://placehold.jp/150x150.png";
+            }}
+          />
+        </div>
+
+        <div className="product-details">
+          <h3 className="product-name">{product.name}</h3>
+          <p className="product-category">
+            {product.category?.name || "Uncategorized"}
+          </p>
+          <p className="product-price">${formatPrice(product.price)}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Render full product item
   return (
     <div className="product-item">
       {product.featured && <span className="featured-badge">Featured</span>}
@@ -55,13 +88,13 @@ const ProductItem = ({ product, pageInfo = '' }) => {
         </p>
 
         <div className="product-details">
-          <p className="price">${product.price.toFixed(2)}</p>
+          <p className="price">${formatPrice(product.price)}</p>
 
           <div className="stock-info">
             <span className={`stock-status ${stockStatus.className}`}>
               {stockStatus.label}
             </span>
-            <span className="stock-quantity">Stock: {product.stock}</span>
+            <span className="stock-quantity">Stock: {product.stock || 0}</span>
           </div>
         </div>
       </div>

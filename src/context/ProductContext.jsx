@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { 
   getProducts, 
   getProductById, 
@@ -29,6 +29,11 @@ export const ProductProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
+
+  // Tự động tải dữ liệu sản phẩm khi component mount
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   // Fetch product by ID
   const fetchProductById = useCallback(async (id) => {

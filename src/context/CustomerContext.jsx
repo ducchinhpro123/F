@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { getCustomers, getCustomerById, createCustomer, updateCustomer } from '../services/customerService';
 
 const CustomerContext = createContext();
@@ -21,6 +21,11 @@ export const CustomerProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
+  
+  // Tự động tải dữ liệu khách hàng khi component mount
+  useEffect(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   const fetchCustomerById = useCallback(async (id) => {
     setLoading(true);

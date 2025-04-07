@@ -4,6 +4,7 @@ import { useProductContext } from "../../context/ProductContext";
 import { useCategoryContext } from "../../context/CategoryContext";
 import { useForm, Controller } from "react-hook-form";
 import { useEffect } from "react";
+import ProductStats from "../../components/stats/ProductStats";
 import "./ProductNew.css";
 
 const ProductNew = () => {
@@ -87,6 +88,11 @@ const ProductNew = () => {
         <h1>Add New Product</h1>
         <p>Create a new product to add to your inventory</p>
       </div>
+      
+      <div className="product-stats-container">
+        <ProductStats />
+      </div>
+      
       {submitStatus.success && (
         <div className="success-message">
           Product created successfully! Redirecting to products list...
