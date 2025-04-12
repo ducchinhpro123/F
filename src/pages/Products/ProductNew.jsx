@@ -26,6 +26,7 @@ const ProductNew = () => {
       image: null,
     },
   });
+
   const navigate = useNavigate();
 
   const [submitStatus, setSubmitStatus] = useState({
