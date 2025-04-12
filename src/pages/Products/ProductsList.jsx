@@ -32,12 +32,7 @@ const ProductsList = () => {
     }
 
     fetchProducts(queryParams);
-  }, [
-    currentPage,
-    paginationInfo.limit,
-    fetchProducts,
-    searchParams
-  ]);
+  }, [currentPage, paginationInfo.limit, fetchProducts, searchParams]);
 
   useEffect(() => {
     loadProducts();
@@ -66,7 +61,7 @@ const ProductsList = () => {
         newParams.set("page", "1");
         return newParams;
       },
-      { replace: false }
+      { replace: false },
     );
   };
 
@@ -77,22 +72,24 @@ const ProductsList = () => {
         newParams.set("page", newPage.toString());
         return newParams;
       },
-      { replace: false }
+      { replace: false },
     );
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const renderSkeletons = () => {
-    return Array(paginationInfo.limit).fill().map((_, index) => (
-      <div key={index} className="product-skeleton">
-        <div className="skeleton-image"></div>
-        <div className="skeleton-content">
-          <div className="skeleton-title"></div>
-          <div className="skeleton-category"></div>
-          <div className="skeleton-price"></div>
+    return Array(paginationInfo.limit)
+      .fill()
+      .map((_, index) => (
+        <div key={index} className="product-skeleton">
+          <div className="skeleton-image"></div>
+          <div className="skeleton-content">
+            <div className="skeleton-title"></div>
+            <div className="skeleton-category"></div>
+            <div className="skeleton-price"></div>
+          </div>
         </div>
-      </div>
-    ));
+      ));
   };
 
   return (
@@ -101,7 +98,8 @@ const ProductsList = () => {
         <div className="page-header-content">
           <h1>Products</h1>
           <p className="products-count">
-            {paginationInfo.totalProducts > 0 && `${paginationInfo.totalProducts} products found`}
+            {paginationInfo.totalProducts > 0 &&
+              `${paginationInfo.totalProducts} products found`}
           </p>
         </div>
         <div className="page-actions">
@@ -111,7 +109,7 @@ const ProductsList = () => {
         </div>
       </div>
 
-      <ProductFilter onFilterChange={handleFilterChange}  />
+      <ProductFilter onFilterChange={handleFilterChange} />
 
       {error && (
         <div className="error-message">

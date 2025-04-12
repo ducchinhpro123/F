@@ -6,7 +6,8 @@ const ProtectedRoute = ({ children }) => {
   
   // Show nothing while checking authentication
   if (loading) {
-    return null;
+    return <p>Checking authentication...</p>
+    // return null;
   }
   
   // Redirect to login if not authenticated

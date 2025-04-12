@@ -1,5 +1,7 @@
 // Base API configuration and helper functions
 
+// import { axios } from 'axios';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 /**
@@ -16,19 +18,13 @@ export async function apiRequest(endpoint, options = {}) {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` })
   };
-  
+
   // Don't set Content-Type header when FormData is present
   // Browser will automatically set it with correct boundary
   if (options.body instanceof FormData) {
     delete defaultHeaders['Content-Type'];
   }
-  
-<<<<<<< HEAD
-  // Don't set content-type for FormData (browser will set it with boundary)
-  if (options.formData) {
-    delete defaultHeaders['Content-Type'];
-  }
-  
+
   const config = {
     ...options,
     headers: {
@@ -41,9 +37,6 @@ export async function apiRequest(endpoint, options = {}) {
   if (config.formData) {
     delete config.formData;
   }
-  
-=======
->>>>>>> 479b5cdd100fdf8f9dd1624a9f691ca58718d819
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
@@ -63,6 +56,10 @@ export async function apiRequest(endpoint, options = {}) {
     console.error('API request error:', error);
     throw error;
   }
+}
+
+export const api_axios = {
+
 }
 
 // Common HTTP method wrappers
