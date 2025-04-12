@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProductContext } from '../context/ProductContext';
 import { useCustomerContext } from '../context/CustomerContext';
@@ -9,181 +9,177 @@ import CustomerStats from '../components/stats/CustomerStats';
 import PriceStats from '../components/stats/PriceStats';
 import './Dashboard.css';
 
-const Dashboard = () => {
-  const { products, fetchProducts } = useProductContext();
-  const { customers } = useCustomerContext();
-  const { productSoldQuantities, getTotalProductsSold } = useOrderContext();
-  const { categories, fetchCategories } = useCategoryContext();
-  const [recentProducts, setRecentProducts] = useState([]);
-  const [recentCustomers, setRecentCustomers] = useState([]);
-  const [productData, setProductData] = useState({
-    totalProducts: 0,
-    totalStock: 0,
-    totalSold: 0,
-    categories: {}
-  });
+// Helper function to safely get product list
+const getSafeProductList = (productsContext) => {
+  return Array.isArray(productsContext?.products) ? productsContext.products : [];
+};
 
-  // Lấy dữ liệu sản phẩm khi component mount
+// Helper function to safely get category list
+const getSafeCategoryList = (categoriesContext) => {
+  return Array.isArray(categoriesContext?.categories) ? categoriesContext.categories : [];
+};
+
+// Helper function to format currency
+const formatCurrency = (value) => {
+  return new window.Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(value || 0); // Ensure value is not undefined/null
+};
+
+const Dashboard = () => {
+  // --- Context Hooks ---
+  const { products: productsContext, fetchProducts } = useProductContext();
+  const { customers: customersContext, fetchCustomers } = useCustomerContext(); // Assuming fetchCustomers exists
+  const { getTotalProductsSold, fetchOrders } = useOrderContext(); // Assuming fetchOrders exists
+  const { categories: categoriesContext, fetchCategories } = useCategoryContext();
+
+  // --- State ---
+  // No local state needed for derived data anymore, using useMemo instead.
+  // State for recent items is still needed if calculated separately or fetched differently.
+
+  // --- Data Fetching ---
   useEffect(() => {
+    console.log('Fetching initial dashboard data...');
     fetchProducts();
     fetchCategories();
-  }, [fetchProducts, fetchCategories]);
+    if (fetchCustomers) fetchCustomers(); // Fetch customers if function exists
+    if (fetchOrders) fetchOrders(); // Fetch orders if function exists (needed for getTotalProductsSold)
+    // Removed interval refresh for simplification. Consider adding a manual refresh button if needed.
+  }, [fetchProducts, fetchCategories, fetchCustomers, fetchOrders]); // Dependencies for initial fetch
 
-  // Xử lý dữ liệu thống kê sản phẩm
-  useEffect(() => {
-    if (products) {
-      // Lấy danh sách sản phẩm từ cấu trúc API response
-      const productsList = Array.isArray(products.products) ? products.products : [];
-      
-      // Sử dụng totalProducts từ API response nếu có, ngược lại sử dụng độ dài mảng
-      const totalProducts = products.totalProducts || productsList.length;
-      
-      // Tính tổng tồn kho
-      const totalStock = productsList.reduce((sum, product) => {
-        // Chuyển đổi giá trị tồn kho sang số và đảm bảo giá trị hợp lệ
-        const stockValue = Number(product.stock);
-        return sum + (isNaN(stockValue) ? 0 : stockValue);
-      }, 0);
-      
-      // Lấy tổng số lượng đã bán từ OrderContext
-      const totalSold = getTotalProductsSold();
-      
-      // Phân loại sản phẩm theo danh mục
-      const categories = {};
-      productsList.forEach(product => {
-        // Đảm bảo category luôn có giá trị
-        const category = product.category ? 
-          (typeof product.category === 'object' ? product.category.name : product.category) : 
-          'Chưa phân loại';
-        
-        if (!categories[category]) {
-          categories[category] = {
-            count: 0,
-            totalValue: 0
-          };
-        }
-        
-        // Tăng số lượng sản phẩm trong danh mục
-        categories[category].count += 1;
-        
-        // Tính giá trị hàng tồn = giá x số lượng
-        const price = Number(product.price) || 0;
-        const stock = Number(product.stock) || 0;
-        categories[category].totalValue += price * stock;
-      });
-      
-      // Cập nhật trạng thái với dữ liệu đã xử lý
-      setProductData({ totalProducts, totalStock, totalSold, categories });
-      
-      // Xử lý sản phẩm gần đây
-      if (productsList.length > 0) {
-        // Sắp xếp sản phẩm theo thời gian để lấy sản phẩm gần đây
-        const sorted = [...productsList].sort((a, b) => {
-          const dateA = new Date(a.createdAt || 0);
-          const dateB = new Date(b.createdAt || 0);
-          return dateB - dateA;
-        });
-        
-        setRecentProducts(sorted.slice(0, 5)); // Lấy 5 sản phẩm gần nhất
-      }
-    }
-  }, [products, getTotalProductsSold]);
+  // --- Derived Data Calculation (using useMemo) ---
 
-  // Xử lý dữ liệu khách hàng
-  useEffect(() => {
-    // Kiểm tra và lấy các khách hàng gần đây
-    if (customers && customers.length) {
-      const sorted = [...customers].sort((a, b) => {
-        const dateA = new Date(a.createdAt || 0);
-        const dateB = new Date(b.createdAt || 0);
-        return dateB - dateA;
-      });
-      setRecentCustomers(sorted.slice(0, 5)); // Giới hạn tối đa 5 khách hàng
-    }
-  }, [customers]);
+  // Memoize the safe product list
+  const productsList = useMemo(() => getSafeProductList(productsContext), [productsContext]);
 
-  // Định dạng tiền tệ VND
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('vi-VN', { 
-      style: 'currency', 
-      currency: 'VND',
-      maximumFractionDigits: 0
-    }).format(value);
-  };
+  // Memoize the safe category list
+  const categoriesList = useMemo(() => getSafeCategoryList(categoriesContext), [categoriesContext]);
 
+  // Memoize product statistics
+  const productStats = useMemo(() => {
+    const totalProducts = productsContext?.totalProducts || productsList.length;
+    const totalStock = productsList.reduce((sum, product) => {
+      const stockValue = Number(product.stock);
+      return sum + (isNaN(stockValue) ? 0 : stockValue);
+    }, 0);
+    const totalSold = getTotalProductsSold ? getTotalProductsSold() : 0; // Ensure function exists
+
+    // Calculate category breakdown (simplified, only counts products per category)
+    const categoryCounts = productsList.reduce((acc, product) => {
+      const categoryName = product.category
+        ? typeof product.category === 'object'
+          ? product.category.name
+          : product.category
+        : 'Uncategorized';
+      acc[categoryName] = (acc[categoryName] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      totalProducts,
+      totalStock,
+      totalSold,
+      categoryCount: Object.keys(categoryCounts).length, // Count of distinct categories found in products
+      // Note: The detailed category breakdown (value, etc.) might be better handled within ProductStats if needed there
+    };
+  }, [productsList, productsContext?.totalProducts, getTotalProductsSold]);
+
+  // Memoize recent products
+  const recentProducts = useMemo(() => {
+    if (!productsList.length) return [];
+    // Sort by creation date (descending)
+    return [...productsList]
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      .slice(0, 5); // Get top 5
+  }, [productsList]);
+
+  // Memoize recent customers
+  const recentCustomers = useMemo(() => {
+    const safeCustomers = Array.isArray(customersContext) ? customersContext : [];
+    if (!safeCustomers.length) return [];
+    // Sort by creation date (descending)
+    return [...safeCustomers]
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      .slice(0, 5); // Get top 5
+  }, [customersContext]);
+
+  // --- Render ---
   return (
     <div className="dashboard container">
       <div className="dashboard-header">
-        <h1>Tổng Quan</h1>
-        <p>Trang tổng quan hiển thị thông tin tổng hợp về sản phẩm và khách hàng</p>
+        <h1>Dashboard Overview</h1>
+        <p>Summary information about products and customers.</p>
+        {/* Consider adding a manual refresh button here */}
+        {/* <button onClick={() => { fetchProducts(); fetchCategories(); ... }}>Refresh Data</button> */}
       </div>
 
-      {/* Hiển thị thông tin tổng quát */}
+      {/* Summary Statistics */}
       <div className="summary-stats">
         <div className="summary-card">
-          <div className="summary-title">Tổng số sản phẩm</div>
-          <div className="summary-value">{productData.totalProducts}</div>
+          <div className="summary-title">Total Products</div>
+          <div className="summary-value">{productStats.totalProducts}</div>
         </div>
         <div className="summary-card">
-          <div className="summary-title">Tổng hàng trong kho</div>
-          <div className="summary-value">{productData.totalStock}</div>
+          <div className="summary-title">Total Stock</div>
+          <div className="summary-value">{productStats.totalStock}</div>
         </div>
         <div className="summary-card">
-          <div className="summary-title">Đã bán</div>
-          <div className="summary-value">{productData.totalSold}</div>
+          <div className="summary-title">Total Sold</div>
+          <div className="summary-value">{productStats.totalSold}</div>
         </div>
         <div className="summary-card">
-          <div className="summary-title">Danh mục sản phẩm</div>
-          <div className="summary-value">{categories?.categories?.length || Object.keys(productData.categories).length}</div>
+          <div className="summary-title">Product Categories</div>
+          {/* Display count from categories context if available, otherwise from calculated product stats */}
+          <div className="summary-value">{categoriesList.length > 0 ? categoriesList.length : productStats.categoryCount}</div>
         </div>
       </div>
 
+      {/* Detailed Stats Components */}
       <div className="dashboard-stats">
-        {products && (
-          <ProductStats 
-            products={Array.isArray(products.products) ? products.products : []} 
-            categories={Array.isArray(categories?.categories) ? categories.categories : []}
-            productData={productData}
-          />
-        )}
-        {customers && Array.isArray(customers) && (
-          <CustomerStats customers={customers} />
-        )}
-        {products && (
-          <PriceStats 
-            products={Array.isArray(products.products) ? products.products : []} 
-            customers={customers}
-            categories={Array.isArray(categories?.categories) ? categories.categories : []}
-          />
-        )}
+        {/* Pass memoized lists directly */}
+        <ProductStats
+          products={productsList}
+          categories={categoriesList}
+          // Pass specific stats needed, avoid passing the whole old productData object
+          // Example: pass categoryCounts if ProductStats needs it
+        />
+        <CustomerStats customers={Array.isArray(customersContext) ? customersContext : []} />
+        <PriceStats
+          products={productsList}
+          customers={Array.isArray(customersContext) ? customersContext : []}
+          categories={categoriesList}
+        />
       </div>
-      
+
+      {/* Recent Activity Sections */}
       <div className="dashboard-recent">
         <div className="recent-section">
-          <h2>Sản Phẩm Gần Đây</h2>
+          <h2>Recent Products</h2>
           {recentProducts.length > 0 ? (
             <ul className="recent-list">
-              {recentProducts.map(product => (
+              {recentProducts.map((product) => (
                 <li key={product._id || product.id} className="recent-item">
                   <span>{product.name}</span>
-                  <span>{formatCurrency(parseFloat(product.price || 0))}</span>
+                  <span>{formatCurrency(product.price)}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p>Chưa có sản phẩm nào</p>
+            <p>No recent products found.</p>
           )}
           <div className="recent-actions">
-            <Link to="/products/new" className="btn btn-sm">Thêm Sản Phẩm</Link>
-            <Link to="/products" className="btn btn-sm btn-outline">Xem Tất Cả</Link>
+            <Link to="/products/new" className="btn btn-sm">Add Product</Link>
+            <Link to="/products" className="btn btn-sm btn-outline">View All</Link>
           </div>
         </div>
-        
+
         <div className="recent-section">
-          <h2>Khách Hàng Gần Đây</h2>
+          <h2>Recent Customers</h2>
           {recentCustomers.length > 0 ? (
             <ul className="recent-list">
-              {recentCustomers.map(customer => (
+              {recentCustomers.map((customer) => (
                 <li key={customer._id || customer.id} className="recent-item">
                   <span>{customer.name}</span>
                   <span>{customer.email}</span>
@@ -191,10 +187,12 @@ const Dashboard = () => {
               ))}
             </ul>
           ) : (
-            <p>Chưa có khách hàng nào</p>
+            <p>No recent customers found.</p>
           )}
           <div className="recent-actions">
-            <Link to="/customers" className="btn btn-sm btn-outline">Xem Tất Cả</Link>
+            {/* Assuming a route exists for adding customers */}
+            {/* <Link to="/customers/new" className="btn btn-sm">Add Customer</Link> */}
+            <Link to="/customers" className="btn btn-sm btn-outline">View All</Link>
           </div>
         </div>
       </div>
