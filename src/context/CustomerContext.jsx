@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { getCustomers, getCustomerById, createCustomer, updateCustomer } from '../services/customerService';
+import { createContext, useContext, useState, useCallback } from 'react';
+import { getCustomers, getCustomerById, createCustomer, updateCustomer, deleteCustomer } from '../services/customerService';
 
 const CustomerContext = createContext();
 
@@ -9,78 +9,98 @@ export const CustomerProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Fetch all customers
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const data = await getCustomers();
-      setCustomers(data);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
+      const response = await getCustomers();
+      console.log('Fetched customers:', response);
+      setCustomers(response);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      setError('Failed to fetch customers. Please try again later.');
     } finally {
       setLoading(false);
     }
   }, []);
-  
-  // Tự động tải dữ liệu khách hàng khi component mount
-  useEffect(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
 
+  // Fetch a single customer by ID
   const fetchCustomerById = useCallback(async (id) => {
     setLoading(true);
+    setError(null);
     try {
-      const data = await getCustomerById(id);
-      setCurrentCustomer(data);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
+      const customer = await getCustomerById(id);
+      if (customer) {
+        setCurrentCustomer(customer);
+      } else {
+        console.error('Invalid API response:', customer);
+        setError('Invalid API response. Please contact support.');
+      }
+    } catch (error) {
+      console.error(`Error fetching customer with ID ${id}:`, error);
+      setError('Failed to fetch customer details. Please try again later.');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const handleCreateCustomer = useCallback(async (customerData) => {
-    setLoading(true);
+  // Add a new customer
+  const addCustomer = async (customerData) => {
+    setError(null);
     try {
-      const data = await createCustomer(customerData);
-      setCustomers(prev => [...prev, data]);
-      return data;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
+      const newCustomer = await createCustomer(customerData);
+      // Fetch lại toàn bộ danh sách sau khi thêm
+      await fetchCustomers();
+      return newCustomer;
+    } catch (error) {
+      console.error('Error adding customer:', error);
+      setError('Failed to add customer. Please try again later.');
+      throw error;
     }
-  }, []);
+  };
 
-  const handleUpdateCustomer = useCallback(async (id, customerData) => {
-    setLoading(true);
+  // Edit an existing customer
+  const editCustomer = async (id, customerData) => {
+    setError(null);
     try {
-      const data = await updateCustomer(id, customerData);
-      setCustomers(prev => prev.map(item => item.id === id ? data : item));
-      return data;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
+      const updatedCustomer = await updateCustomer(id, customerData);
+      setCustomers((prev) =>
+        prev.map((customer) => (customer.id === id ? updatedCustomer : customer))
+      );
+    } catch (error) {
+      console.error(`Error updating customer with ID ${id}:`, error);
+      setError('Failed to update customer. Please try again later.');
     }
-  }, []);
+  };
 
-  const value = {
-    customers,
-    currentCustomer,
-    loading,
-    error,
-    fetchCustomers,
-    fetchCustomerById,
-    createCustomer: handleCreateCustomer,
-    updateCustomer: handleUpdateCustomer
+  // Remove a customer
+  const removeCustomer = async (id) => {
+    setError(null);
+    try {
+      await deleteCustomer(id);
+      setCustomers((prev) => prev.filter((customer) => customer._id !== id));
+    } catch (error) {
+      console.error(`Error deleting customer with ID ${id}:`, error);
+      setError('Failed to delete customer. Please try again later.');
+    }
   };
 
   return (
-    <CustomerContext.Provider value={value}>
+    <CustomerContext.Provider
+      value={{
+        customers,
+        setCustomers,
+        currentCustomer,
+        loading,
+        error,
+        fetchCustomers,
+        fetchCustomerById,
+        addCustomer,
+        editCustomer,
+        removeCustomer,
+      }}
+    >
       {children}
     </CustomerContext.Provider>
   );

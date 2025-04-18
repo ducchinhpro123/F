@@ -7,6 +7,7 @@ import ProductEdit from "./pages/Products/ProductEdit";
 import ProductNew from "./pages/Products/ProductNew";
 import ProductView from "./pages/Products/ProductView";
 import CustomersList from "./pages/Customers/CustomersList";
+import CustomerDetail from "./pages/Customers/CustomerDetail";// Import trang chỉnh sửa khách hàng
 import Login from "./pages/Auth/Login";
 import Signup from "./pages/Auth/Signup";
 import ProfilePage from "./pages/Profile/ProfilePage";
@@ -17,6 +18,7 @@ import { CustomerProvider } from "./context/CustomerContext";
 import { AuthProvider } from "./context/AuthContext";
 import { OrderProvider } from './context/OrderContext';
 import "./App.css";
+import CustomerEdit from "./pages/Customers/CustomerEdit";
 
 function App() {
   return (
@@ -102,6 +104,26 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route
+                    path="/customers/:id"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <CustomerDetail />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route 
+                    path="/customers/:id/edit" 
+                    element={
+                    <ProtectedRoute>
+                      <Layout>
+                      <CustomerEdit />
+                      </Layout>
+                    </ProtectedRoute>
+                     } 
+                  />  
                 </Routes>
               </OrderProvider>
             </CustomerProvider>

@@ -1,7 +1,7 @@
 var User = require("../models/User");
 const bcrypt = require('bcrypt');
-var jwt = require("jsonwebtoken");
-var dotenv = require("dotenv");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
@@ -37,38 +37,74 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 1024 * 1024 * 5 // Limit to 5MB
+    fileSize: 1024 * 1024 * 5 
   },
   fileFilter: fileFilter
 });
 
 class UserController {
+  static async searchUsers(req, res) {
+    try {
+      const q = req.query.q || '';
+      const users = await User.find({
+        name: { $regex: q, $options: 'i' }
+      });
+      res.status(200).json(users);
+    } catch (error) {
+      console.error('Error searching users:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  }
+
+  static async getUser(req, res) {
+    try {
+      const user = await User.findById(req.params.id).select('-password');
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  }
+
+  static async updateUser(req, res) {
+    try {
+      console.log('Uploaded file:', req.file); // Debug
+      const { name, email } = req.body;
+      let avatarPath = null;
+      if (req.file) {
+        avatarPath = `/avatars/${req.file.filename}`; // Sửa thành /avatars/
+      }
+      const updatedUser = await User.findByIdAndUpdate(
+        req.params.id,
+        { name, email, avatar: avatarPath },
+        { new: true, runValidators: true }
+      ).select('-password');
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      res.status(200).json({ success: true, user: updatedUser });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  }
+
+  static async deleteUser(req, res) {
+    try {
+      const user = await User.findByIdAndDelete(req.params.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      res.status(200).json({ success: true, message: 'User deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  }
+  
   static async getAllUser(req, res) {
     const users = await User.find();
     return res.json(users);
-  }
-
-  // Get user by :id
-  static async getUser(req, res) {
-    const id = req.params.id;
-    try {
-      if (!id) {
-        return res.json({ Message: "Id invalid" });
-      }
-      const user = await User.findById(id);
-      if (!user) {
-        return res.json({ Message: "User not found" });
-      }
-
-      return res.json({
-        id: user._id,
-        name: user.name,
-        username: user.username,
-      });
-    } catch (e) {
-      console.log(e);
-      return res.json({ Error: e.message });
-    }
   }
 
   static async login(req, res) {
@@ -80,30 +116,23 @@ class UserController {
           message: "Please provide username and password",
         });
       }
-
       const user = await User.findOne({ username });
-
       if (!user) {
         return res.status(400).json({
           success: false,
           message: "Please provide username and password",
         });
       }
-
-      // user.comparePassword(password);
       const isMatch = await user.comparePassword(password);
-
       if (!isMatch) {
         return res.status(401).json({
           success: false,
           message: "Invalid credentials",
         });
       }
-
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: "30d",
       });
-
       res.status(201).json({
         success: true,
         token,
@@ -111,7 +140,7 @@ class UserController {
           id: user._id,
           name: user.name,
           username: user.username,
-          avatar: user.avatar, // Include avatar in response
+          avatar: user.avatar,
           role: user.role
         },
       });
@@ -127,17 +156,13 @@ class UserController {
 
   static async register(req, res) {
     const { name, username, password } = req.body;
-
     try {
-      // Validate input
       if (!name || !username || !password) {
         return res.status(400).json({
           success: false,
           message: "Please provide name, username and password",
         });
       }
-
-      // Check if user already exists
       let user = await User.findOne({ username });
       if (user) {
         return res.status(400).json({
@@ -145,19 +170,14 @@ class UserController {
           message: "User with this username already exists",
         });
       }
-
-      // Create user
       user = await User.create({
         name: name,
         username: username,
         password: password,
       });
-
-      // Create token
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: "30d",
       });
-
       res.status(201).json({
         success: true,
         token,
@@ -165,7 +185,7 @@ class UserController {
           id: user._id,
           name: user.name,
           username: user.username,
-          avatar: user.avatar, // Include avatar in response
+          avatar: user.avatar,
           role: user.role
         },
       });
@@ -183,28 +203,23 @@ class UserController {
     try {
       const userId = req.user.id;
       const { name } = req.body;
-      
       if (!name) {
         return res.status(400).json({
           success: false,
           message: "Name is required"
         });
       }
-      
-      // Update user profile
       const updatedUser = await User.findByIdAndUpdate(
         userId,
         { name },
         { new: true, runValidators: true }
       ).select('-password');
-      
       if (!updatedUser) {
         return res.status(404).json({
           success: false,
           message: "User not found"
         });
       }
-      
       res.status(200).json({
         success: true,
         user: {
@@ -223,80 +238,49 @@ class UserController {
       });
     }
   }
-  
+
   static async uploadAvatar(req, res) {
     try {
-      // multer middleware will handle the file upload
-      upload.single('avatar')(req, res, async (err) => {
-        if (err) {
-          return res.status(400).json({
-            success: false,
-            message: err.message
-          });
-        }
-        
-        if (!req.file) {
-          return res.status(400).json({
-            success: false,
-            message: "No file uploaded"
-          });
-        }
-        
-        const userId = req.user.id;
-        const avatarPath = `/avatars/${req.file.filename}`;
-        
-        // Find user and get previous avatar path if exists
-        const user = await User.findById(userId);
-        const previousAvatar = user.avatar;
-        
-        // Update user with new avatar path
-        const updatedUser = await User.findByIdAndUpdate(
-          userId,
-          { avatar: avatarPath },
-          { new: true, runValidators: true }
-        ).select('-password');
-        
-        // Delete previous avatar file if it's not the default
-        if (previousAvatar && previousAvatar !== '/avatars/avatar.jpg') {
-          const previousAvatarPath = path.join(__dirname, '../public', previousAvatar);
-          if (fs.existsSync(previousAvatarPath)) {
-            fs.unlinkSync(previousAvatarPath);
-          }
-        }
-        
-        res.status(200).json({
-          success: true,
-          user: {
-            id: updatedUser._id,
-            name: updatedUser.name,
-            username: updatedUser.username,
-            avatar: updatedUser.avatar
-          }
+      console.log('File Upload Data:', req.file);
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không tìm thấy file upload'
         });
+      }
+      const avatarPath = `/avatars/${req.file.filename}`;
+      const user = await User.findById(req.user.id);
+      console.log('User trước khi update:', user);
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user.id,
+        { avatar: avatarPath },
+        { new: true }
+      ).select('-password');
+      console.log('User sau khi update:', updatedUser);
+      return res.status(200).json({
+        success: true,
+        data: updatedUser
       });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({
+      console.error('Lỗi upload:', error);
+      return res.status(500).json({
         success: false,
-        message: "Server error",
+        message: 'Lỗi server khi upload avatar',
         error: error.message
       });
     }
   }
-  
+
   static async getProfile(req, res) {
     try {
       const userId = req.user.id;
-      
       const user = await User.findById(userId).select('-password');
-      
       if (!user) {
         return res.status(404).json({
           success: false,
           message: "User not found"
         });
       }
-      
       res.status(200).json({
         success: true,
         user: {
@@ -318,4 +302,5 @@ class UserController {
   }
 }
 
-module.exports = UserController;
+// Xuất cả UserController và upload
+module.exports = { UserController, upload };

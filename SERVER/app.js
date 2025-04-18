@@ -16,6 +16,9 @@ connect_mongodb();
 
 var app = express();
 
+app.use('/avatars', express.static(path.join(__dirname, 'public/avatars')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
 // Enable CORS for React app
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'http://localhost:5173');

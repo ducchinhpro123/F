@@ -1,22 +1,24 @@
 import { api } from './api';
 
-const CUSTOMERS_ENDPOINT = '/customers';
+const CUSTOMERS_ENDPOINT = '/users';
 
 /**
  * Get all customers
  * @returns {Promise<Array>} Array of customers
  */
 export async function getCustomers() {
-  return api.get(CUSTOMERS_ENDPOINT);
+  return api.get(`${CUSTOMERS_ENDPOINT}/getAllUser`); // Gọi đúng endpoint
 }
-
 /**
  * Get a customer by ID
  * @param {string} id - Customer ID
  * @returns {Promise<Object>} Customer data
  */
 export async function getCustomerById(id) {
-  return api.get(`${CUSTOMERS_ENDPOINT}/${id}`);
+  if (!id) {
+    throw new Error('Customer ID is required');
+  }
+  return api.get(`${CUSTOMERS_ENDPOINT}/${id}`); // Gọi đúng endpoint
 }
 
 /**
@@ -25,7 +27,7 @@ export async function getCustomerById(id) {
  * @returns {Promise<Object>} Created customer
  */
 export async function createCustomer(customerData) {
-  return api.post(CUSTOMERS_ENDPOINT, customerData);
+  return api.post( `${CUSTOMERS_ENDPOINT}/register `, customerData);
 }
 
 /**
@@ -35,7 +37,7 @@ export async function createCustomer(customerData) {
  * @returns {Promise<Object>} Updated customer
  */
 export async function updateCustomer(id, customerData) {
-  return api.put(`${CUSTOMERS_ENDPOINT}/${id}`, customerData);
+  return api.put(`${CUSTOMERS_ENDPOINT}/${id}/edit`, customerData);
 }
 
 /**
@@ -55,6 +57,7 @@ export async function deleteCustomer(id) {
 export async function searchCustomers(query) {
   return api.get(`${CUSTOMERS_ENDPOINT}/search?q=${encodeURIComponent(query)}`);
 }
+
 
 export default {
   getCustomers,
