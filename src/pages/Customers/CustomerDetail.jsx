@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCustomerContext } from '../../context/CustomerContext';
 
 // Ảnh mặc định khi avatar là null
-const DEFAULT_AVATAR = '/images/default-avatar.png'; // Đặt ảnh mặc định trong thư mục public/images
+const DEFAULT_AVATAR = 'https://picsum.photos/200/300'; // Đặt ảnh mặc định trong thư mục public/images
 
 const CustomerDetail = () => {
   const { id } = useParams();

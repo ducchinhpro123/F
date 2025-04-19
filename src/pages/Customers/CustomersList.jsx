@@ -52,8 +52,8 @@ const CustomersList = () => {
     e.preventDefault();
     setFormError(null);
     try {
-      await addCustomer(formData);
       // Không cần fetchCustomers() vì đã được gọi trong addCustomer
+      await addCustomer(formData);
       closeModal();
     } catch (err) {
       setFormError(err.message || 'Failed to add customer');
@@ -84,7 +84,6 @@ const CustomersList = () => {
       </div>
 
       <CustomerFilter onFilterChange={handleFilterChange} />
-
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {!customers || customers.length === 0 ? (
@@ -92,7 +91,7 @@ const CustomersList = () => {
       ) : (
         <div className="customer-items">
           {customers.map((customer, index) => {
-            console.log('Customer:', customer); // Debug dữ liệu customer
+            console.log('Customer:', customer.name); // Debug dữ liệu customer
             // Chuẩn hóa key để tránh thiếu _id
             const key = customer._id || customer.id || `temp-${index}`;
             return (

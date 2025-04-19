@@ -6,7 +6,7 @@ const CustomerItem = ({ customer, onDelete, isDeleting }) => {
     <div className="customer-item">
       <h3>{customer.name}</h3>
       <p>{customer.email}</p>
-      <div className="actions">
+      <div className="actions" style={{ display: 'flex', gap: '8px' }}>
         <Link to={`/customers/${customer._id}`} className="btn btn-view">View</Link>
         <Link to={`/customers/${customer._id}/edit`} className="btn btn-edit">Edit</Link>
         <button

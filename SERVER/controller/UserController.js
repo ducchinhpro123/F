@@ -1,92 +1,129 @@
 var User = require("../models/User");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
-const fs = require('fs');
-const path = require('path');
-const multer = require('multer');
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
 
 dotenv.config();
 
 // Setup multer for file upload
 const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    const uploadDir = path.join(__dirname, '../public/avatars');
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, "../public/avatars");
     // Create directory if it doesn't exist
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
     cb(null, uploadDir);
   },
-  filename: function(req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
-    cb(null, 'avatar-' + uniqueSuffix + ext);
-  }
+    cb(null, "avatar-" + uniqueSuffix + ext);
+  },
 });
 
 const fileFilter = (req, file, cb) => {
   // Accept only image files
-  if (file.mimetype.startsWith('image/')) {
+  if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed!'), false);
+    cb(new Error("Only image files are allowed!"), false);
   }
 };
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 1024 * 1024 * 5 
+    fileSize: 1024 * 1024 * 5,
   },
-  fileFilter: fileFilter
+  fileFilter: fileFilter,
 });
 
 class UserController {
   static async searchUsers(req, res) {
     try {
-      const q = req.query.q || '';
+      const q = req.query.q || "";
       const users = await User.find({
-        name: { $regex: q, $options: 'i' }
+        name: { $regex: q, $options: "i" },
       });
       res.status(200).json(users);
     } catch (error) {
-      console.error('Error searching users:', error);
-      res.status(500).json({ message: 'Server error', error: error.message });
+      console.error("Error searching users:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
     }
   }
 
   static async getUser(req, res) {
     try {
-      const user = await User.findById(req.params.id).select('-password');
+      console.log("CALLING");
+      const user = await User.findById(req.params.id).select("-password");
       if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
       }
       res.status(200).json(user);
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   }
 
   static async updateUser(req, res) {
     try {
-      console.log('Uploaded file:', req.file); // Debug
-      const { name, email } = req.body;
+      console.log(req.body);
+
+      const { name, role } = req.body;
       let avatarPath = null;
       if (req.file) {
         avatarPath = `/avatars/${req.file.filename}`; // Sửa thành /avatars/
       }
-      const updatedUser = await User.findByIdAndUpdate(
-        req.params.id,
-        { name, email, avatar: avatarPath },
-        { new: true, runValidators: true }
-      ).select('-password');
-      if (!updatedUser) {
-        return res.status(404).json({ success: false, message: 'User not found' });
+
+      if (avatarPath !== null) {
+        const updatedUser = await User.findByIdAndUpdate(
+          req.params.id,
+          { name, avatar: avatarPath, role: role },
+          { new: true, runValidators: true },
+        ).select("-password");
+
+        // Check if updated is not null
+        if (updatedUser) {
+          res.status(200).json({ success: true, user: updatedUser });
+        } else {
+          return res
+            .status(404)
+            .json({ success: false, message: "User not found" });
+        }
+      } else {
+        const updatedUser = await User.findByIdAndUpdate(
+          req.params.id,
+          { name, role: role },
+          { new: true, runValidators: true },
+        ).select("-password");
+        if (updatedUser) {
+          res.status(200).json({ success: true, user: updatedUser });
+        } else {
+          return res
+            .status(404)
+            .json({ success: false, message: "User not found" });
+        }
       }
-      res.status(200).json({ success: true, user: updatedUser });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   }
 
@@ -94,14 +131,24 @@ class UserController {
     try {
       const user = await User.findByIdAndDelete(req.params.id);
       if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
       }
-      res.status(200).json({ success: true, message: 'User deleted successfully' });
+      res
+        .status(200)
+        .json({ success: true, message: "User deleted successfully" });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error",
+          error: error.message,
+        });
     }
   }
-  
+
   static async getAllUser(req, res) {
     const users = await User.find();
     return res.json(users);
@@ -141,7 +188,7 @@ class UserController {
           name: user.name,
           username: user.username,
           avatar: user.avatar,
-          role: user.role
+          role: user.role,
         },
       });
     } catch (err) {
@@ -186,7 +233,7 @@ class UserController {
           name: user.name,
           username: user.username,
           avatar: user.avatar,
-          role: user.role
+          role: user.role,
         },
       });
     } catch (error) {
@@ -206,18 +253,18 @@ class UserController {
       if (!name) {
         return res.status(400).json({
           success: false,
-          message: "Name is required"
+          message: "Name is required",
         });
       }
       const updatedUser = await User.findByIdAndUpdate(
         userId,
         { name },
-        { new: true, runValidators: true }
-      ).select('-password');
+        { new: true, runValidators: true },
+      ).select("-password");
       if (!updatedUser) {
         return res.status(404).json({
           success: false,
-          message: "User not found"
+          message: "User not found",
         });
       }
       res.status(200).json({
@@ -226,47 +273,47 @@ class UserController {
           id: updatedUser._id,
           name: updatedUser.name,
           username: updatedUser.username,
-          avatar: updatedUser.avatar
-        }
+          avatar: updatedUser.avatar,
+        },
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         success: false,
         message: "Server error",
-        error: error.message
+        error: error.message,
       });
     }
   }
 
   static async uploadAvatar(req, res) {
     try {
-      console.log('File Upload Data:', req.file);
+      console.log("File Upload Data:", req.file);
       if (!req.file) {
         return res.status(400).json({
           success: false,
-          message: 'Không tìm thấy file upload'
+          message: "Không tìm thấy file upload",
         });
       }
       const avatarPath = `/avatars/${req.file.filename}`;
       const user = await User.findById(req.user.id);
-      console.log('User trước khi update:', user);
+      console.log("User trước khi update:", user);
       const updatedUser = await User.findByIdAndUpdate(
         req.user.id,
         { avatar: avatarPath },
-        { new: true }
-      ).select('-password');
-      console.log('User sau khi update:', updatedUser);
+        { new: true },
+      ).select("-password");
+      console.log("User sau khi update:", updatedUser);
       return res.status(200).json({
         success: true,
-        data: updatedUser
+        data: updatedUser,
       });
     } catch (error) {
-      console.error('Lỗi upload:', error);
+      console.error("Lỗi upload:", error);
       return res.status(500).json({
         success: false,
-        message: 'Lỗi server khi upload avatar',
-        error: error.message
+        message: "Lỗi server khi upload avatar",
+        error: error.message,
       });
     }
   }
@@ -274,11 +321,11 @@ class UserController {
   static async getProfile(req, res) {
     try {
       const userId = req.user.id;
-      const user = await User.findById(userId).select('-password');
+      const user = await User.findById(userId).select("-password");
       if (!user) {
         return res.status(404).json({
           success: false,
-          message: "User not found"
+          message: "User not found",
         });
       }
       res.status(200).json({
@@ -288,15 +335,15 @@ class UserController {
           name: user.name,
           username: user.username,
           avatar: user.avatar,
-          role: user.role
-        }
+          role: user.role,
+        },
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         success: false,
         message: "Server error",
-        error: error.message
+        error: error.message,
       });
     }
   }

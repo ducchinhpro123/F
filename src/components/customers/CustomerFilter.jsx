@@ -24,7 +24,7 @@ const CustomerFilter = ({ onFilterChange }) => {
           onChange={handleInputChange}
           className="search-input"
         />
-        <button onClick={handleClear} className="btn btn-clear">Clear</button>
+        <button onClick={handleClear} className="btn btn-clear" style={{ marginTop: '10px' }}>Clear</button>
       </div>
     </div>
   );
