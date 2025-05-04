@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import RenderUserAvatar from '../common/renderUserAvatar';
 import './Header.css';
 
 const Header = ({ toggleSidebar }) => {
@@ -58,38 +59,6 @@ const Header = ({ toggleSidebar }) => {
     navigate('/login');
   };
   
-  // Get user initials for avatar
-  const getUserInitials = () => {
-    if (!user || !user.name) return 'U';
-    
-    const names = user.name.split(' ');
-    if (names.length >= 2) {
-      return `${names[0].charAt(0)}${names[1].charAt(0)}`;
-    }
-    return names[0].charAt(0);
-  };
-  
-  // Render user avatar or initials
-  const renderUserAvatar = () => {
-    if (user?.avatar) {
-      return (
-        <img 
-          src={`http://localhost:3000${user.avatar}`} 
-          alt={user.name || 'User'}
-          className="user-avatar-img"
-          onError={(e) => {
-            e.target.onerror = null;
-            // Fallback to initials if image fails to load
-            e.target.style.display = 'none';
-            e.target.parentNode.innerHTML = getUserInitials();
-          }}
-        />
-      );
-    }
-    
-    return getUserInitials();
-  };
-
   return (
     <header className="header">
       <div className="header-left">
@@ -113,7 +82,7 @@ const Header = ({ toggleSidebar }) => {
             onClick={() => isAuthenticated ? setUserMenuOpen(!userMenuOpen) : navigate('/login')}
           >
             <div className="avatar">
-              {isAuthenticated ? renderUserAvatar() : 'G'}
+              {isAuthenticated ? <RenderUserAvatar /> : 'G'}
             </div>
             <span className="user-name">{isAuthenticated ? user.name : 'Guest'}</span>
           </div>

@@ -1,0 +1,126 @@
+body {
+  background: #f0f2f5; /* Solid light grey background */
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+  padding: 24px;
+  border: 1px solid #ccc;
+  border-radius: 16px;
+  max-width: 70%;
+  margin: 40px auto;
+  background: #fff;
+  /* box-shadow: 0 4px 24px rgba(0,0,0,0.08); Removed shadow */
+}
+
+.messages-display {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 16px;
+  border: 1px solid #e0e0e0; /* Slightly darker border */
+  border-radius: 8px;
+  background: #ffffff; /* Plain white background */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.message {
+  padding: 12px 18px;
+  border-radius: 18px;
+  max-width: 70%;
+  word-break: break-word;
+  /* transition: transform 0.2s; Removed transition */
+  font-size: 1rem;
+  /* box-shadow: 0 2px 8px rgba(0,0,0,0.03); Removed shadow */
+}
+
+/* Removed hover effect */
+
+.message.user {
+  align-self: flex-end;
+  background: #007bff; /* Solid blue */
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+
+.message.bot {
+  align-self: flex-start;
+  background: #e9ecef; /* Solid light grey */
+  color: #212529; /* Darker text */
+  border-bottom-left-radius: 6px;
+}
+
+.message.bot li {
+  margin-left: 20px;
+  list-style-type: disc;
+  margin-bottom: 5px; /* Add some space below list items */
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ced4da; /* Solid grey */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+.avatar.user {
+  background: #007bff; /* Solid blue */
+  color: #fff;
+}
+
+.avatar.bot {
+  background: #adb5bd; /* Darker solid grey */
+  color: #fff; /* White text for contrast */
+}
+
+.message-input {
+  display: flex;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+  background: #fff;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+
+.message-input input {
+  flex-grow: 1;
+  padding: 12px;
+  border: 1px solid #ced4da; /* Consistent border color */
+  border-radius: 6px;
+  margin-right: 10px;
+  font-size: 1rem;
+}
+
+.message-input button {
+  padding: 12px 24px;
+  background: #28a745; /* Solid green */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  /* transition: background 0.2s; Removed transition */
+}
+
+.message-input button:hover {
+  background: #218838; /* Darker solid green on hover */
+}

@@ -7,6 +7,7 @@ import ProductEdit from "./pages/Products/ProductEdit";
 import ProductNew from "./pages/Products/ProductNew";
 import ProductView from "./pages/Products/ProductView";
 import CustomersList from "./pages/Customers/CustomersList";
+import Chat from "./pages/Chat/Chat";
 import CustomerDetail from "./pages/Customers/CustomerDetail";// Import trang chỉnh sửa khách hàng
 import Login from "./pages/Auth/Login";
 import Signup from "./pages/Auth/Signup";
@@ -44,6 +45,17 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route
+                    path="/chat"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <Chat/>
+                          {/* put your god damn chat in here*/}
+                        </Layout>
+                      </ProtectedRoute>
+                    }>
+                  </Route>
                   <Route
                     path="/profile"
                     element={
@@ -114,16 +126,16 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route 
-                    path="/customers/:id/edit" 
+                  <Route
+                    path="/customers/:id/edit"
                     element={
-                    <ProtectedRoute>
-                      <Layout>
-                      <CustomerEdit />
-                      </Layout>
-                    </ProtectedRoute>
-                     } 
-                  />  
+                      <ProtectedRoute>
+                        <Layout>
+                          <CustomerEdit />
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
                 </Routes>
               </OrderProvider>
             </CustomerProvider>
